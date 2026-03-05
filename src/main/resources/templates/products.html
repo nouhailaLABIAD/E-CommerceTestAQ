@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Catalogue</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f0f1a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        /* ── NAV ── */
+        nav {
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .brand {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            margin-left: 1.5rem;
+            font-size: .9rem;
+            transition: color .2s;
+        }
+        .nav-links a:hover { color: #e2e8f0; }
+
+        /* ── HERO SEARCH ── */
+        .hero {
+            text-align: center;
+            padding: 4rem 1rem 2.5rem;
+        }
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #e2e8f0 30%, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: .75rem;
+        }
+        .hero p { color: #64748b; font-size: 1rem; margin-bottom: 2rem; }
+
+        .search-bar {
+            display: flex;
+            max-width: 520px;
+            margin: 0 auto;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(129,140,248,0.3);
+            background: rgba(255,255,255,0.04);
+        }
+        .search-bar input {
+            flex: 1;
+            padding: .85rem 1.2rem;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #e2e8f0;
+            font-family: inherit;
+            font-size: .95rem;
+        }
+        .search-bar input::placeholder { color: #475569; }
+        .search-bar button {
+            padding: .85rem 1.6rem;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: .9rem;
+            transition: opacity .2s;
+        }
+        .search-bar button:hover { opacity: .85; }
+
+        /* ── GRID ── */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem 4rem;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.8rem;
+        }
+        .section-header h2 { font-size: 1.3rem; font-weight: 600; color: #cbd5e1; }
+        .badge {
+            background: rgba(129,140,248,0.15);
+            color: #818cf8;
+            border: 1px solid rgba(129,140,248,0.3);
+            padding: .25rem .75rem;
+            border-radius: 999px;
+            font-size: .8rem;
+            font-weight: 500;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* ── CARD ── */
+        /* ✅ La card est maintenant un div, pas un <a> */
+        .card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 18px;
+            padding: 1.4rem;
+            color: inherit;
+            display: block;
+            transition: transform .25s, border-color .25s, box-shadow .25s;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg,
+                rgba(129,140,248,0.06),
+                rgba(192,132,252,0.06));
+            opacity: 0;
+            transition: opacity .25s;
+            pointer-events: none; /* ✅ ne bloque pas les clics */
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(129,140,248,0.4);
+            box-shadow: 0 12px 40px rgba(129,140,248,0.12);
+        }
+        .card:hover::before { opacity: 1; }
+
+        .card-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* ✅ Lien sur le titre uniquement */
+        .card-title-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            margin-bottom: .4rem;
+        }
+        .card-title-link:hover h3 { color: #818cf8; }
+
+        .card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            transition: color .2s;
+        }
+
+        .card .price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #818cf8;
+            margin-bottom: 1rem;
+        }
+        .card .price span { font-size: .75rem; color: #64748b; font-weight: 400; }
+
+        .card-footer {
+            padding-top: .8rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .5rem;
+        }
+
+        /* ✅ "Voir le détail" = vrai lien <a> séparé */
+        .voir-detail {
+            color: #64748b;
+            font-size: .78rem;
+            text-decoration: none;
+            transition: color .2s;
+        }
+        .voir-detail:hover { color: #818cf8; }
+
+        /* ✅ Bouton Ajouter séparé du lien */
+        .btn-sm {
+            padding: .4rem .9rem;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            color: #fff;
+            font-size: .78rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: opacity .2s;
+            white-space: nowrap;
+        }
+        .btn-sm:hover { opacity: .85; }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <a class="brand" href="/">✦ ShopLux</a>
+    <div class="nav-links">
+        <a href="/">Accueil</a>
+        <a href="/products">Catalogue</a>
+        <a href="/cart">🛒 Panier</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+    <h1>Notre Catalogue</h1>
+    <p>Découvrez notre sélection de produits premium</p>
+    <form action="/products/search" method="get">
+        <div class="search-bar">
+            <input type="text" name="keyword" placeholder="🔍  Rechercher un produit…"/>
+            <button type="submit">Rechercher</button>
+        </div>
+    </form>
+</div>
+
+<!-- GRID -->
+<div class="container">
+    <div class="section-header">
+        <h2>Tous les produits</h2>
+        <span class="badge">Nouveau</span>
+    </div>
+
+    <div class="grid">
+        <!--
+            ✅ CORRECTION :
+            - La card est un <div> (plus un <a>)
+            - Le titre est un <a> séparé vers le détail
+            - Le bouton "Ajouter" est un <button> séparé
+            => Plus de conflit HTML, navigation fonctionnelle
+        -->
+        <div class="card" th:each="p : ${products}">
+
+            <div class="card-icon">🛍</div>
+
+            <!-- ✅ Lien vers la page détail sur le titre -->
+            <a class="card-title-link"
+               th:href="@{/products/{id}(id=${p.id})}">
+                <h3 th:text="${p.nom}">Nom Produit</h3>
+            </a>
+
+            <div class="price">
+                <span th:text="${p.prix}">0.00</span>
+                <span> €</span>
+            </div>
+
+            <div class="card-footer">
+                <!-- ✅ Lien "Voir le détail" séparé -->
+                <a class="voir-detail"
+                   th:href="@{/products/{id}(id=${p.id})}">
+                    Voir le détail →
+                </a>
+
+                <!-- ✅ Bouton indépendant -->
+                <button class="btn-sm"
+                        th:onclick="|window.location.href='@{/cart/add/{id}(id=${p.id})}'|">
+                    🛒 Ajouter
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
