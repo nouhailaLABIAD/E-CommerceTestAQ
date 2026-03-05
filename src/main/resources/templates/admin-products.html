@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Admin — Produits</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f0f1a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 240px;
+            background: rgba(255,255,255,0.03);
+            border-right: 1px solid rgba(255,255,255,0.07);
+            padding: 2rem 1.2rem;
+            display: flex; flex-direction: column; gap: .35rem;
+            flex-shrink: 0; min-height: 100vh;
+        }
+        .brand {
+            font-size: 1.3rem; font-weight: 700;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;    
+            margin-bottom: 2rem; padding-left: .5rem;
+            text-decoration: none; display: block;
+        }
+        .sidebar-label {
+            font-size: .7rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: .08em;
+            color: #334155; padding: .5rem .9rem; margin-top: .5rem;
+        }
+        .sidebar a {
+            display: flex; align-items: center; gap: .7rem;
+            padding: .65rem .9rem; border-radius: 10px;
+            color: #64748b; text-decoration: none;
+            font-size: .9rem; transition: background .2s, color .2s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background: rgba(129,140,248,0.1); color: #818cf8;
+        }
+        .sidebar .logout { margin-top: auto; }
+        .sidebar .logout a { color: #f87171; }
+        .sidebar .logout a:hover { background: rgba(248,113,113,.1); }
+
+        /* ── MAIN ── */
+        .main { flex: 1; padding: 2.5rem; overflow-y: auto; }
+
+        .topbar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 2rem;
+        }
+        .topbar h1 { font-size: 1.6rem; font-weight: 700; color: #f1f5f9; }
+        .topbar p { color: #64748b; font-size: .85rem; margin-top: .2rem; }
+
+        .btn-new {
+            display: inline-flex; align-items: center; gap: .5rem;
+            padding: .7rem 1.4rem;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            border: none; border-radius: 12px;
+            color: #fff; font-family: inherit;
+            font-size: .9rem; font-weight: 600;
+            cursor: pointer; text-decoration: none;
+            transition: opacity .2s, transform .15s;
+        }
+        .btn-new:hover { opacity: .87; transform: translateY(-1px); }
+
+        /* ── SEARCH BAR ── */
+        .toolbar {
+            display: flex; align-items: center; gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .search-wrap {
+            flex: 1; max-width: 340px;
+            display: flex; align-items: center; gap: .6rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 10px;
+            padding: .6rem 1rem;
+        }
+        .search-wrap input {
+            background: transparent; border: none; outline: none;
+            color: #e2e8f0; font-family: inherit; font-size: .9rem;
+            flex: 1;
+        }
+        .search-wrap input::placeholder { color: #475569; }
+
+        /* ── TABLE ── */
+        .table-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 18px; overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            text-align: left;
+            padding: .9rem 1.3rem;
+            font-size: .77rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: .05em;
+            color: #475569;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        tbody td {
+            padding: 1rem 1.3rem;
+            font-size: .88rem; color: #94a3b8;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            vertical-align: middle;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: rgba(255,255,255,0.025); }
+
+        .product-cell {
+            display: flex; align-items: center; gap: .85rem;
+        }
+        .product-thumb {
+            width: 38px; height: 38px; border-radius: 10px;
+            background: linear-gradient(135deg,
+                rgba(129,140,248,.2), rgba(192,132,252,.2));
+            display: flex; align-items: center; justify-content: center;
+            font-size: .95rem; flex-shrink: 0;
+        }
+        .product-name-cell { font-weight: 600; color: #e2e8f0; font-size: .9rem; }
+
+        .price-cell { font-weight: 600; color: #818cf8; }
+
+        .stock-badge {
+            display: inline-flex; align-items: center; gap: .3rem;
+            padding: .25rem .7rem; border-radius: 999px;
+            font-size: .75rem; font-weight: 600;
+        }
+        .stock-badge.ok   { background: rgba(74,222,128,.1);  color: #4ade80; }
+        .stock-badge.low  { background: rgba(245,158,11,.1);  color: #f59e0b; }
+        .stock-badge.out  { background: rgba(248,113,113,.1); color: #f87171; }
+
+        .actions {
+            display: flex; align-items: center; gap: .5rem;
+        }
+        .btn-edit {
+            display: inline-flex; align-items: center; gap: .35rem;
+            padding: .4rem .9rem;
+            background: rgba(129,140,248,.1);
+            border: 1px solid rgba(129,140,248,.25);
+            border-radius: 8px; color: #818cf8;
+            font-size: .78rem; font-weight: 600;
+            text-decoration: none;
+            transition: background .2s;
+        }
+        .btn-edit:hover { background: rgba(129,140,248,.2); }
+        .btn-delete {
+            display: inline-flex; align-items: center; gap: .35rem;
+            padding: .4rem .9rem;
+            background: rgba(248,113,113,.08);
+            border: 1px solid rgba(248,113,113,.2);
+            border-radius: 8px; color: #f87171;
+            font-size: .78rem; font-weight: 600;
+            text-decoration: none;
+            transition: background .2s;
+        }
+        .btn-delete:hover { background: rgba(248,113,113,.18); }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center; padding: 4rem 1rem; color: #475569;
+        }
+        .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .empty-state p { font-size: .95rem; }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <a class="brand" href="/admin">✦ ShopLux</a>
+
+    <span class="sidebar-label">Principal</span>
+    <a href="/admin">🏠 Dashboard</a>
+    <a href="/admin/products" class="active">📦 Produits</a>
+    <a href="/admin/categories">🏷 Catégories</a>
+    <a href="/admin/orders">📋 Commandes</a>
+
+    <span class="sidebar-label">Compte</span>
+    <a href="/admin/settings">⚙️ Paramètres</a>
+
+    <div class="logout">
+        <a href="/logout">🚪 Déconnexion</a>
+    </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+        <div>
+            <h1>Gestion des produits</h1>
+            <p>Créez, modifiez et supprimez vos produits</p>
+        </div>
+        <a href="/admin/products/new" class="btn-new">
+            ➕ Nouveau produit
+        </a>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+        <div class="search-wrap">
+            <span style="color:#475569">🔍</span>
+            <input type="text" placeholder="Rechercher un produit…"/>
+        </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Prix</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Ligne vide si pas de produits -->
+                <tr th:if="${#lists.isEmpty(products)}">
+                    <td colspan="4">
+                        <div class="empty-state">
+                            <div class="empty-icon">📦</div>
+                            <p>Aucun produit pour l'instant.<br/>
+                               <a href="/admin/products/new"
+                                  style="color:#818cf8;text-decoration:none;font-weight:600">
+                                   Créer le premier produit →
+                               </a>
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr th:each="p : ${products}">
+                    <!-- NOM -->
+                    <td>
+                        <div class="product-cell">
+                            <div class="product-thumb">🛍</div>
+                            <span class="product-name-cell" th:text="${p.nom}">Produit</span>
+                        </div>
+                    </td>
+
+                    <!-- PRIX -->
+                    <td>
+                        <span class="price-cell">
+                            <span th:text="${p.prix}">0.00</span> €
+                        </span>
+                    </td>
+
+                    <!-- STOCK -->
+                    <td>
+                        <span class="stock-badge"
+                              th:classappend="${p.stock > 10 ? 'ok' : (p.stock > 0 ? 'low' : 'out')}">
+                            ● <span th:text="${p.stock}">0</span>
+                        </span>
+                    </td>
+
+                    <!-- ACTIONS -->
+                    <td>
+                        <div class="actions">
+                            <a class="btn-edit"
+                               th:href="@{/admin/products/edit/{id}(id=${p.id})}">
+                                ✏️ Éditer
+                            </a>
+                            <a class="btn-delete"
+                               th:href="@{/admin/products/delete/{id}(id=${p.id})}"
+                               onclick="return confirm('Supprimer ce produit ?')">
+                                🗑 Supprimer
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+
+</body>
+</html>

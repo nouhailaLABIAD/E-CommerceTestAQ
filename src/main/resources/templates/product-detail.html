@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${product.nom}">Produit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f0f1a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .brand {
+            font-size: 1.4rem; font-weight: 700;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;    
+            text-decoration: none;
+        }
+        .nav-links a {
+            color: #94a3b8; text-decoration: none;
+            margin-left: 1.5rem; font-size: .9rem; transition: color .2s;
+        }
+        .nav-links a:hover { color: #e2e8f0; }
+
+        .container {
+            max-width: 1000px;
+            margin: 3.5rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .breadcrumb {
+            display: flex; align-items: center; gap: .5rem;
+            font-size: .82rem; color: #475569; margin-bottom: 2.5rem;
+        }
+        .breadcrumb a { color: #64748b; text-decoration: none; }
+        .breadcrumb a:hover { color: #818cf8; }
+        .breadcrumb span { color: #334155; }
+
+        /* ── DETAIL CARD ── */
+        .detail-card {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 24px;
+            padding: 2.5rem;
+            align-items: start;
+        }
+
+        /* Fake image placeholder */
+        .product-visual {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg,
+                rgba(129,140,248,0.15) 0%,
+                rgba(192,132,252,0.15) 100%);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .product-visual .icon { font-size: 4rem; }
+        .product-visual .hint { font-size: .75rem; color: #475569; }
+
+        /* Info side */
+        .product-info { display: flex; flex-direction: column; gap: 1.2rem; }
+
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            background: rgba(129,140,248,0.12);
+            border: 1px solid rgba(129,140,248,0.25);
+            color: #818cf8;
+            padding: .3rem .85rem;
+            border-radius: 999px;
+            font-size: .78rem;
+            font-weight: 600;
+            width: fit-content;
+        }
+
+        .product-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            line-height: 1.2;
+        }
+
+        .product-desc { color: #94a3b8; font-size: .95rem; line-height: 1.6; }
+
+        .price-block {
+            background: rgba(129,140,248,0.07);
+            border: 1px solid rgba(129,140,248,0.2);
+            border-radius: 14px;
+            padding: 1.2rem 1.4rem;
+            display: flex;
+            align-items: baseline;
+            gap: .4rem;
+        }
+        .price-main {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;    
+            -webkit-text-fill-color: transparent;
+        }
+        .price-unit { font-size: .9rem; color: #64748b; }
+
+        .stock-info {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            font-size: .87rem;
+            color: #64748b;
+        }
+        .stock-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #4ade80;
+            box-shadow: 0 0 6px #4ade80;
+        }
+        .stock-dot.low { background: #facc15; box-shadow: 0 0 6px #facc15; }
+        .stock-dot.out { background: #f87171; box-shadow: 0 0 6px #f87171; }
+
+        .divider { height: 1px; background: rgba(255,255,255,0.06); }
+
+        .btn-add {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity .2s, transform .15s;
+        }
+        .btn-add:hover { opacity: .87; transform: translateY(-2px); }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .75rem 1.4rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 12px;
+            color: #94a3b8;
+            font-family: inherit;
+            font-size: .88rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background .2s, color .2s;
+            width: 100%;
+            justify-content: center;
+        }
+        .btn-back:hover { background: rgba(255,255,255,0.08); color: #e2e8f0; }
+
+        @media (max-width: 680px) {
+            .detail-card { grid-template-columns: 1fr; gap: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="brand" href="/">✦ ShopLux</a>
+    <div class="nav-links">
+        <a href="/products">Catalogue</a>
+        <a href="/cart">🛒 Panier</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- BREADCRUMB -->
+    <div class="breadcrumb">
+        <a href="/">Accueil</a>
+        <span>/</span>
+        <a href="/products">Catalogue</a>
+        <span>/</span>
+        <span th:text="${product.nom}">Produit</span>
+    </div>
+
+    <!-- CARD -->
+    <div class="detail-card">
+
+        <!-- Visual -->
+        <div class="product-visual">
+            <div class="icon">🛍️</div>
+            <span class="hint">Image produit</span>
+        </div>
+
+        <!-- Info -->
+        <div class="product-info">
+            <div class="category-badge">🏷 Catégorie</div>
+
+            <h1 class="product-name" th:text="${product.nom}">Nom du produit</h1>
+
+            <p class="product-desc" th:text="${product.description}">
+                Description détaillée du produit…
+            </p>
+
+            <div class="divider"></div>
+
+            <!-- Prix -->
+            <div class="price-block">
+                <span class="price-main" th:text="${product.prix}">0.00</span>
+                <span class="price-unit">€ TTC</span>
+            </div>
+
+            <!-- Stock -->
+            <div class="stock-info">
+                <div class="stock-dot" th:classappend="${product.stock > 5 ? '' : (product.stock > 0 ? 'low' : 'out')}"></div>
+                En stock :
+                <strong style="color:#e2e8f0" th:text="${product.stock}">0</strong>
+                unité(s)
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Actions -->
+            <button class="btn-add">🛒 Ajouter au panier</button>
+            <a href="/products" class="btn-back">← Retour au catalogue</a>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
