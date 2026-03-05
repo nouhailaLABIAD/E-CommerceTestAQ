@@ -13,6 +13,6 @@ public class LoginController {
 
     @GetMapping("/")
     public String homePage() {
-        return "index"; // page index.html
+        return "homePatisserie"; // page index.html
     }
 }

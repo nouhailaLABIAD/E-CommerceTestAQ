@@ -45,7 +45,7 @@ public class SecurityConfig {
                         if (isAdmin) {
                             response.sendRedirect("/admin/homeAdmin");
                         } else {
-                            response.sendRedirect("/client/homeUser");
+                            response.sendRedirect("/client/hmePatisserie");
                         }
                     })
                     .permitAll()
