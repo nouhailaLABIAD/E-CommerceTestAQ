@@ -5,264 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title th:text="${product.nom} + ' - Lalla Délices'">Produit</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
-    <style>
-        :root {
-            --cream: #F8F3EE;
-            --cream-deep: #F0E8DF;
-            --warm-white: #FDFAF7;
-            --sand: #ffeed9;
-            --sand-dark: #D4BFA8;
-            --taupe: #B8A090;
-            --mocha: #8C6E5A;
-            --espresso: #5C4033;
-            --gold: #C9A96E;
-            --gold-light: #f8d99a;
-            --gold-pale: #F5EDDC;
-            --sage: #A8B89C;
-            --sage-deep: #849A76;
-            --ink: #3A3028;
-            --ink-soft: #6B5C52;
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Jost', sans-serif;
-            background: var(--cream);
-            color: var(--ink);
-            min-height: 100vh;
-        }
-
-        nav {
-            background: var(--warm-white);
-            border-bottom: 1px solid var(--sand);
-            padding: 1rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky; top: 0; z-index: 100;
-        }
-        .brand {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.4rem; font-weight: 500;
-            color: var(--espresso);
-            text-decoration: none;
-        }
-        .brand em { color: var(--gold); font-style: italic; }
-        .nav-links a {
-            color: var(--ink-soft); text-decoration: none;
-            margin-left: 1.5rem; font-size: .9rem; transition: color .2s;
-        }
-        .nav-links a:hover { color: var(--espresso); }
-
-        .container {
-            max-width: 1000px;
-            margin: 3.5rem auto;
-            padding: 0 1.5rem;
-        }
-
-        .breadcrumb {
-            display: flex; align-items: center; gap: .5rem;
-            font-size: .82rem; color: var(--taupe); margin-bottom: 2.5rem;
-        }
-        .breadcrumb a { color: var(--taupe); text-decoration: none; }
-        .breadcrumb a:hover { color: var(--espresso); }
-        .breadcrumb span { color: var(--ink-soft); }
-
-        /* DETAIL CARD */
-        .detail-card {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            background: var(--warm-white);
-            border: 1px solid var(--sand);
-            border-radius: 24px;
-            padding: 2.5rem;
-            align-items: start;
-        }
-
-        /* Fake image placeholder */
-        .product-visual {
-            aspect-ratio: 1;
-            background: linear-gradient(135deg, var(--gold-pale) 0%, var(--sand) 100%);
-            border-radius: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: .5rem;
-            border: 1px solid var(--sand);
-        }
-        .product-visual .icon { font-size: 4rem; }
-        .product-visual .hint { font-size: .75rem; color: var(--taupe); }
-
-        /* Info side */
-        .product-info { display: flex; flex-direction: column; gap: 1.2rem; }
-
-        .category-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            background: rgba(201,169,110,0.15);
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            padding: .3rem .85rem;
-            border-radius: 999px;
-            font-size: .78rem;
-            font-weight: 600;
-            width: fit-content;
-        }
-
-        .product-name {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            font-weight: 600;
-            color: var(--espresso);
-            line-height: 1.2;
-        }
-
-        .product-desc { color: var(--taupe); font-size: .95rem; line-height: 1.6; }
-
-        .price-block {
-            background: var(--gold-pale);
-            border: 1px solid var(--gold);
-            border-radius: 14px;
-            padding: 1.2rem 1.4rem;
-            display: flex;
-            align-items: baseline;
-            gap: .4rem;
-        }
-        .price-main {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
-            font-weight: 600;
-            color: var(--espresso);
-        }
-        .price-unit { font-size: .9rem; color: var(--taupe); }
-
-        .stock-info {
-            display: flex;
-            align-items: center;
-            gap: .6rem;
-            font-size: .87rem;
-            color: var(--taupe);
-        }
-        .stock-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: var(--sage-deep);
-            box-shadow: 0 0 6px var(--sage-deep);
-        }
-        .stock-dot.low { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
-        .stock-dot.out { background: #c2185b; box-shadow: 0 0 6px #c2185b; }
-
-        .divider { height: 1px; background: var(--sand); }
-
-        .btn-add {
-            width: 100%;
-            padding: 1rem;
-            background: var(--espresso);
-            border: none;
-            border-radius: 14px;
-            color: var(--cream);
-            font-family: inherit;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background .2s, transform .15s;
-        }
-        .btn-add:hover { background: var(--gold); transform: translateY(-2px); }
-
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: .5rem;
-            padding: .75rem 1.4rem;
-            background: var(--cream);
-            border: 1px solid var(--sand-dark);
-            border-radius: 12px;
-            color: var(--ink-soft);
-            font-family: inherit;
-            font-size: .88rem;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background .2s, color .2s;
-            width: 100%;
-            justify-content: center;
-        }
-        .btn-back:hover { background: var(--sand); color: var(--espresso); }
-
-        @media (max-width: 680px) {
-            .detail-card { grid-template-columns: 1fr; gap: 1.5rem; }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/lalla-delices.css}"/>
 </head>
 <body>
 
-<nav>
+<nav class="client-nav">
     <a class="brand" href="/">Lalla <em>Délices</em></a>
     <div class="nav-links">
-        <a href="/products">Catalogue</a>
-        <a href="/cart">🛒 Panier</a>
+        <a href="/client/products">Boutique</a>
+        <a href="/cart" class="cart-badge">🛒 Panier</a>
     </div>
 </nav>
 
-<div class="container">
+<div class="container-md" style="margin-top:3.5rem; margin-bottom:4rem;">
 
-    <!-- BREADCRUMB -->
     <div class="breadcrumb">
-        <a href="/">Accueil</a>
-        <span>/</span>
-        <a href="/products">Catalogue</a>
-        <span>/</span>
+        <a href="/">Accueil</a> <span>/</span>
+        <a href="/client/products">Boutique</a> <span>/</span>
         <span th:text="${product.nom}">Produit</span>
     </div>
 
-    <!-- CARD -->
-    <div class="detail-card">
+    <div class="product-detail-card">
 
-        <!-- Visual -->
+        <!-- Image -->
         <div class="product-visual">
-            <div class="icon">🛍</div>
-            <span class="hint">Image produit</span>
+            <img th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}"
+                 th:src="${product.imageUrl}" th:alt="${product.nom}"/>
+            <div th:if="${product.imageUrl == null or product.imageUrl.isEmpty()}">
+                <div class="placeholder-icon">🛍</div>
+                <span class="placeholder-hint">Image du produit</span>
+            </div>
         </div>
 
-        <!-- Info -->
+        <!-- Infos -->
         <div class="product-info">
-            <div class="category-badge">🏷 Catégorie</div>
 
-            <h1 class="product-name" th:text="${product.nom}">Nom du produit</h1>
+            <div class="category-badge" th:if="${product.category != null}">
+                <div class="cat-img">
+                    <img th:if="${product.category.imageUrl != null and !product.category.imageUrl.isEmpty()}"
+                         th:src="${product.category.imageUrl}" th:alt="${product.category.nom}"/>
+                    <span th:if="${product.category.imageUrl == null or product.category.imageUrl.isEmpty()}">🏷</span>
+                </div>
+                <span th:text="${product.category.nom}">Catégorie</span>
+            </div>
 
-            <p class="product-desc" th:text="${product.description}">
-                Description détaillée du produit...
-            </p>
+            <h1 style="font-size:2rem;" th:text="${product.nom}">Nom du produit</h1>
+            <p style="color:var(--taupe);font-size:.95rem;line-height:1.6;" th:text="${product.description}">Description...</p>
 
-            <div class="divider"></div>
+            <div class="hr"></div>
 
-            <!-- Prix -->
             <div class="price-block">
                 <span class="price-main" th:text="${product.prix}">0.00</span>
                 <span class="price-unit">€ TTC</span>
             </div>
 
-            <!-- Stock -->
             <div class="stock-info">
                 <div class="stock-dot" th:classappend="${product.stock > 5 ? '' : (product.stock > 0 ? 'low' : 'out')}"></div>
-                En stock :
-                <strong style="color:var(--espresso)" th:text="${product.stock}">0</strong>
-                unité(s)
+                En stock : <strong style="color:var(--espresso)" th:text="${product.stock}">0</strong> unité(s)
             </div>
 
-            <div class="divider"></div>
+            <div class="hr"></div>
 
-            <!-- Actions -->
-            <button class="btn-add">🛒 Ajouter au panier</button>
-            <a href="/products" class="btn-back">← Retour au catalogue</a>
+            <form th:action="@{/cart/add/{id}(id=${product.id})}" method="post">
+                <button type="submit" class="btn btn-primary btn-full"
+                        th:disabled="${product.stock == 0}"
+                        th:text="${product.stock > 0 ? '🛒 Ajouter au panier' : '⚠️ Rupture de stock'}">
+                    🛒 Ajouter au panier
+                </button>
+            </form>
+            <a href="/client/products" class="btn btn-secondary btn-full" style="margin-top:.6rem;">← Retour à la boutique</a>
         </div>
-
     </div>
-</div>
 
+    <!-- Produits similaires -->
+    <div class="similar-section" th:if="${similarProducts != null and !similarProducts.isEmpty()}">
+        <h2>Vous pourriez aussi aimer</h2>
+        <div class="similar-grid">
+            <a class="similar-card" th:each="sp : ${similarProducts}" th:href="@{/client/products/{id}(id=${sp.id})}">
+                <div class="sim-img">
+                    <img th:if="${sp.imageUrl != null and !sp.imageUrl.isEmpty()}" th:src="${sp.imageUrl}" th:alt="${sp.nom}"/>
+                    <span th:if="${sp.imageUrl == null or sp.imageUrl.isEmpty()}">🛍</span>
+                </div>
+                <div class="sim-body">
+                    <h4 th:text="${sp.nom}">Produit</h4>
+                    <div class="sim-price"><span th:text="${sp.prix}">0.00</span> €</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+</div>
 </body>
 </html>
-

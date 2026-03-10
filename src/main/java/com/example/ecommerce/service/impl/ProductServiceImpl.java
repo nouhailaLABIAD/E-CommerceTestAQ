@@ -24,8 +24,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> searchProducts(String keyword) {
-        return productRepository
-                .findByNomContainingIgnoreCaseAndDeletedFalse(keyword);
+        return productRepository.findByNomContainingIgnoreCaseAndDeletedFalse(keyword);
     }
 
     @Override
@@ -42,10 +41,23 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product updateProduct(Long id, Product updatedProduct) {
         Product product = getProductById(id);
+
+        // Champs de base
         product.setNom(updatedProduct.getNom());
         product.setPrix(updatedProduct.getPrix());
         product.setStock(updatedProduct.getStock());
         product.setDescription(updatedProduct.getDescription());
+
+        // Catégorie — mise à jour si fournie
+        if (updatedProduct.getCategory() != null) {
+            product.setCategory(updatedProduct.getCategory());
+        }
+
+        // Image — mise à jour uniquement si une nouvelle valeur est fournie
+        if (updatedProduct.getImageUrl() != null && !updatedProduct.getImageUrl().isEmpty()) {
+            product.setImageUrl(updatedProduct.getImageUrl());
+        }
+
         return productRepository.save(product);
     }
 

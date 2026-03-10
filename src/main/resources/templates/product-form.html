@@ -5,297 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Form Produit - Lalla Délices</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
-    <style>
-        :root {
-            --cream: #F8F3EE;
-            --cream-deep: #F0E8DF;
-            --warm-white: #FDFAF7;
-            --sand: #ffeed9;
-            --sand-dark: #D4BFA8;
-            --taupe: #B8A090;
-            --mocha: #8C6E5A;
-            --espresso: #5C4033;
-            --gold: #C9A96E;
-            --gold-light: #f8d99a;
-            --gold-pale: #F5EDDC;
-            --sage: #A8B89C;
-            --sage-deep: #849A76;
-            --ink: #3A3028;
-            --ink-soft: #6B5C52;
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Jost', sans-serif;
-            background: var(--cream);
-            color: var(--ink);
-            min-height: 100vh;
-            display: flex;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 240px;
-            background: var(--warm-white);
-            border-right: 1px solid var(--sand);
-            padding: 2rem 1.2rem;
-            display: flex;
-            flex-direction: column;
-            gap: .4rem;
-            flex-shrink: 0;
-            min-height: 100vh;
-        }
-        .sidebar .brand {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.3rem;
-            font-weight: 500;
-            color: var(--espresso);
-            margin-bottom: 2rem;
-            padding-left: .5rem;
-            text-decoration: none;
-        }
-        .sidebar .brand em { color: var(--gold); font-style: italic; }
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            gap: .7rem;
-            padding: .65rem .9rem;
-            border-radius: 10px;
-            color: var(--ink-soft);
-            text-decoration: none;
-            font-size: .9rem;
-            transition: background .2s, color .2s;
-        }
-        .sidebar a:hover, .sidebar a.active {
-            background: rgba(201,169,110,0.15);
-            color: var(--espresso);
-        }
-        .sidebar .logout { margin-top: auto; }
-        .sidebar .logout a { color: #c2185b; }
-        .sidebar .logout a:hover { background: rgba(220,53,69,0.1); }
-
-        /* MAIN */
-        .main {
-            flex: 1;
-            padding: 2.5rem 3rem;
-            overflow-y: auto;
-        }
-
-        .page-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 2.5rem;
-        }
-        .back-btn {
-            width: 36px; height: 36px;
-            border-radius: 10px;
-            background: var(--warm-white);
-            border: 1px solid var(--sand);
-            display: flex; align-items: center; justify-content: center;
-            color: var(--ink-soft);
-            text-decoration: none;
-            font-size: 1rem;
-            transition: all .2s;
-        }
-        .back-btn:hover { background: var(--gold); color: var(--espresso); }
-        .page-header h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.6rem;
-            font-weight: 600;
-            color: var(--espresso);
-        }
-
-        /* FORM CARD */
-        .form-card {
-            background: var(--warm-white);
-            border: 1px solid var(--sand);
-            border-radius: 20px;
-            padding: 2.2rem 2.5rem;
-            max-width: 680px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.4rem;
-        }
-        .form-group { display: flex; flex-direction: column; gap: .5rem; }
-        .form-group.full { grid-column: 1 / -1; }
-
-        label {
-            font-size: .82rem;
-            font-weight: 600;
-            color: var(--espresso);
-            text-transform: uppercase;
-            letter-spacing: .05em;
-        }
-        input, select, textarea {
-            padding: .75rem 1rem;
-            background: var(--cream);
-            border: 1px solid var(--sand-dark);
-            border-radius: 10px;
-            color: var(--ink);
-            font-family: inherit;
-            font-size: .95rem;
-            outline: none;
-            transition: border-color .2s, box-shadow .2s;
-        }
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 0 3px rgba(201,169,110,0.2);
-        }
-        select option { background: var(--cream); }
-        input::placeholder, textarea::placeholder { color: var(--taupe); }
-
-        .error-msg {
-            font-size: .78rem;
-            color: #c2185b;
-            display: flex;
-            align-items: center;
-            gap: .3rem;
-            margin-top: .2rem;
-        }
-        .error-msg::before { content: '⚠️'; }
-
-        .divider {
-            height: 1px;
-            background: var(--sand);
-            margin: 1.6rem 0;
-            grid-column: 1 / -1;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        .btn-primary {
-            flex: 1;
-            padding: .85rem 1.5rem;
-            background: var(--espresso);
-            border: none;
-            border-radius: 12px;
-            color: var(--cream);
-            font-family: inherit;
-            font-size: .95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background .2s, transform .15s;
-        }
-        .btn-primary:hover { background: var(--gold); transform: translateY(-1px); }
-        .btn-secondary {
-            padding: .85rem 1.5rem;
-            background: var(--cream);
-            border: 1px solid var(--sand-dark);
-            border-radius: 12px;
-            color: var(--ink-soft);
-            font-family: inherit;
-            font-size: .95rem;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-            transition: background .2s;
-        }
-        .btn-secondary:hover { background: var(--sand); color: var(--espresso); }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/lalla-delices.css}"/>
 </head>
-<body>
+<body class="admin-layout">
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
     <a class="brand" href="/admin">Lalla <em>Délices</em></a>
     <a href="/admin/homeAdmin">🏠 Dashboard</a>
     <a href="/admin/products" class="active">📦 Produits</a>
     <a href="/admin/categories">🏷 Catégories</a>
     <a href="/admin/orders">📋 Commandes</a>
-    <div class="logout">
-        <a href="/logout">🚪 Déconnexion</a>
-    </div>
+    <div class="logout"><a href="/logout">🚪 Déconnexion</a></div>
 </aside>
 
-<!-- MAIN -->
-<main class="main">
+<main class="admin-main">
     <div class="page-header">
         <a href="/admin/products" class="back-btn">←</a>
-        <h2>Formulaire Produit</h2>
+        <h2 th:text="${product.id != null ? 'Modifier le produit' : 'Nouveau produit'}">Formulaire</h2>
     </div>
 
     <div class="form-card">
-        <form th:action="@{/admin/products}"
-              th:object="${product}"
-              method="post">
+        <form th:action="${product.id != null ? '/admin/products/edit/' + product.id : '/admin/products'}"
+              method="post" enctype="multipart/form-data">
+
+            <input type="hidden" name="existingImageUrl" th:value="${product.imageUrl}"/>
 
             <div class="form-grid">
 
-                <!-- NOM -->
                 <div class="form-group full">
                     <label for="nom">Nom du produit</label>
-                    <input type="text" id="nom" th:field="*{nom}" placeholder="Ex : Croissant Beurre"/>
-                    <div class="error-msg"
-                         th:if="${#fields.hasErrors('nom')}"
-                         th:errors="*{nom}"></div>
+                    <input type="text" id="nom" name="nom" th:value="${product.nom}" placeholder="Ex : Croissant Beurre" required/>
                 </div>
 
-                <!-- DESCRIPTION -->
                 <div class="form-group full">
                     <label for="description">Description</label>
-                    <input type="text" id="description" th:field="*{description}"
-                           placeholder="Courte description du produit..."/>
-                    <div class="error-msg"
-                         th:if="${#fields.hasErrors('description')}"
-                         th:errors="*{description}"></div>
+                    <input type="text" id="description" name="description" th:value="${product.description}" placeholder="Courte description..." required/>
                 </div>
 
-                <div class="divider"></div>
+                <div class="form-divider"></div>
 
-                <!-- PRIX -->
                 <div class="form-group">
                     <label for="prix">Prix (€)</label>
-                    <input type="number" id="prix" step="0.01"
-                           th:field="*{prix}" placeholder="0.00"/>
-                    <div class="error-msg"
-                         th:if="${#fields.hasErrors('prix')}"
-                         th:errors="*{prix}"></div>
+                    <input type="number" id="prix" name="prix" step="0.01" min="0.01" th:value="${product.prix}" placeholder="0.00" required/>
                 </div>
 
-                <!-- STOCK -->
                 <div class="form-group">
                     <label for="stock">Stock</label>
-                    <input type="number" id="stock"
-                           th:field="*{stock}" placeholder="0"/>
-                    <div class="error-msg"
-                         th:if="${#fields.hasErrors('stock')}"
-                         th:errors="*{stock}"></div>
+                    <input type="number" id="stock" name="stock" min="0" th:value="${product.stock}" placeholder="0" required/>
                 </div>
 
-                <!-- CATEGORIE -->
                 <div class="form-group full">
-                    <label for="category">Catégorie</label>
-                    <select id="category" th:field="*{category.id}">
+                    <label for="categoryId">Catégorie</label>
+                    <select id="categoryId" name="categoryId" required>
                         <option value="">— Choisir une catégorie —</option>
                         <option th:each="c : ${categories}"
                                 th:value="${c.id}"
-                                th:text="${c.nom}"></option>
+                                th:text="${c.nom}"
+                                th:selected="${product.category != null and product.category.id == c.id}">
+                        </option>
                     </select>
-                    <div class="error-msg"
-                         th:if="${#fields.hasErrors('category')}"
-                         th:errors="*{category}"></div>
                 </div>
 
-            </div><!-- /grid -->
+                <div class="form-divider"></div>
 
-            <div class="form-actions">
-                <a href="/admin/products" class="btn-secondary">Annuler</a>
-                <button type="submit" class="btn-primary">💾 Enregistrer le produit</button>
+                <div class="form-group full">
+                    <label>Image du produit</label>
+                    <div class="existing-image" th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}">
+                        <p>Image actuelle :</p>
+                        <img th:src="${product.imageUrl}" alt="Image actuelle"/>
+                    </div>
+                    <div class="image-upload-zone">
+                        <input type="file" name="imageFile" accept="image/jpeg,image/png,image/webp" onchange="previewImage(this)"/>
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-text">
+                            <strong>Cliquez pour choisir une image</strong><br/>
+                            <span th:text="${product.imageUrl != null ? 'ou glissez une image pour remplacer' : 'ou glissez votre fichier ici'}">ou glissez votre fichier ici</span><br/>
+                            <small style="color:var(--taupe);font-size:.75rem">JPG, PNG, WebP — max 5 Mo</small>
+                        </div>
+                    </div>
+                    <div class="image-preview-wrap" id="previewWrap">
+                        <p class="preview-label">Nouvelle image :</p>
+                        <img id="previewImg" src="#" alt="Prévisualisation"/>
+                    </div>
+                </div>
+
             </div>
 
+            <div class="form-actions">
+                <a href="/admin/products" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary" style="flex:1;">💾 Enregistrer</button>
+            </div>
         </form>
     </div>
 </main>
 
+<script>
+    function previewImage(input) {
+        const wrap = document.getElementById('previewWrap');
+        const img  = document.getElementById('previewImg');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => { img.src = e.target.result; wrap.classList.add('visible'); };
+            reader.readAsDataURL(input.files[0]);
+        } else { wrap.classList.remove('visible'); }
+    }
+</script>
 </body>
 </html>
-

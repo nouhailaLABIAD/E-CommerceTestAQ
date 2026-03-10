@@ -2,54 +2,79 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Catégorie</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Jost&display=swap" rel="stylesheet"/>
-    <style>
-        :root { --cream:#F8F3EE; --warm:#FDFAF7; --sand:#ffeed9; --sandD:#D4BFA8; --taupe:#B8A090; --espresso:#5C4033; --gold:#C9A96E; --goldP:#F5EDDC; --ink:#3A3028; }
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--ink);display:flex}
-        .sidebar{width:240px;background:var(--warm);border-right:1px solid var(--sand);padding:2rem 1.2rem;position:fixed;height:100vh}
-        .brand{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--espresso);text-decoration:none;margin-bottom:2rem}
-        .brand em{color:var(--gold);font-style:italic}
-        .sidebar a{display:flex;align-items:center;gap:.7rem;padding:.65rem .9rem;border-radius:10px;color:var(--ink-soft);text-decoration:none;font-size:.9rem}
-        .sidebar a:hover{background:rgba(201,169,110,0.15)}
-        .main{margin-left:240px;padding:2.5rem}
-        .page-header{display:flex;align-items:center;gap:1rem;margin-bottom:2rem}
-        .back-btn{width:36px;height:36px;border-radius:10px;background:var(--warm);border:1px solid var(--sand);display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ink)}
-        .page-title{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--espresso)}
-        .form-card{background:var(--warm);border:1px solid var(--sand);border-radius:20px;padding:2rem;max-width:500px}
-        .form-group{margin-bottom:1.5rem}
-        label{display:block;font-size:.8rem;font-weight:600;color:var(--espresso);text-transform:uppercase;margin-bottom:.5rem}
-        input{width:100%;padding:.75rem;border:1px solid var(--sandD);border-radius:10px;font-size:.95rem}
-        .form-actions{display:flex;gap:1rem;margin-top:2rem}
-        .btn-primary{flex:1;padding:.85rem;background:var(--espresso);color:var(--cream);border:none;border-radius:12px;font-weight:600;cursor:pointer}
-        .btn-secondary{padding:.85rem;background:var(--cream);border:1px solid var(--sandD);border-radius:12px;text-decoration:none;color:var(--ink)}
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Form Catégorie - Lalla Délices</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/lalla-delices.css}"/>
 </head>
-<body>
+<body class="admin-layout">
+
 <aside class="sidebar">
     <a class="brand" href="/admin/homeAdmin">Lalla <em>Délices</em></a>
-    <a href="/admin/homeAdmin">Dashboard</a>
-    <a href="/admin/products">Produits</a>
-    <a href="/admin/categories">Catégories</a>
+    <a href="/admin/homeAdmin">🏠 Dashboard</a>
+    <a href="/admin/products">📦 Produits</a>
+    <a href="/admin/categories" class="active">🏷 Catégories</a>
+    <a href="/admin/orders">📋 Commandes</a>
+    <div class="logout"><a href="/logout">🚪 Déconnexion</a></div>
 </aside>
-<main class="main">
+
+<main class="admin-main">
     <div class="page-header">
         <a href="/admin/categories" class="back-btn">←</a>
-        <h2 class="page-title" th:text="${category.id != null ? 'Modifier' : 'Nouvelle'}">Formulaire</h2>
+        <h2 th:text="${category.id != null ? 'Modifier la catégorie' : 'Nouvelle catégorie'}">Formulaire</h2>
     </div>
-    <div class="form-card">
-        <form th:action="${category.id != null ? '/admin/categories/edit/' + category.id : '/admin/categories'}" th:object="${category}" method="post">
-            <div class="form-group">
-                <label>Nom</label>
-                <input type="text" th:field="*{nom}" required/>
+
+    <div class="form-card" style="max-width:540px;">
+        <form th:action="${category.id != null ? '/admin/categories/edit/' + category.id : '/admin/categories'}"
+              method="post" enctype="multipart/form-data">
+
+            <input type="hidden" name="existingImageUrl" th:value="${category.imageUrl}"/>
+
+            <div class="form-group" style="margin-bottom:1.5rem;">
+                <label for="nom">Nom de la catégorie</label>
+                <input type="text" id="nom" name="nom" th:value="${category.nom}"
+                       placeholder="Ex : Pâtisseries, Viennoiseries..." required/>
             </div>
+
+            <div class="form-group" style="margin-bottom:1.5rem;">
+                <label>Image de la catégorie</label>
+                <div class="existing-image" th:if="${category.imageUrl != null and !category.imageUrl.isEmpty()}">
+                    <p>Image actuelle :</p>
+                    <img th:src="${category.imageUrl}" alt="Image actuelle"/>
+                </div>
+                <div class="image-upload-zone">
+                    <input type="file" name="imageFile" accept="image/jpeg,image/png,image/webp" onchange="previewImage(this)"/>
+                    <div class="upload-icon">🖼</div>
+                    <div class="upload-text">
+                        <strong>Cliquez pour choisir une image</strong><br/>
+                        <span th:text="${category.imageUrl != null ? 'ou glissez une image pour remplacer' : 'ou glissez votre fichier ici'}">ou glissez votre fichier ici</span><br/>
+                        <small style="color:var(--taupe);font-size:.75rem">JPG, PNG, WebP — max 5 Mo</small>
+                    </div>
+                </div>
+                <div class="image-preview-wrap" id="previewWrap">
+                    <p class="preview-label">Nouvelle image :</p>
+                    <img id="previewImg" src="#" alt="Prévisualisation"/>
+                </div>
+            </div>
+
             <div class="form-actions">
-                <a href="/admin/categories" class="btn-secondary">Annuler</a>
-                <button type="submit" class="btn-primary">Enregistrer</button>
+                <a href="/admin/categories" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary" style="flex:1;">💾 Enregistrer</button>
             </div>
         </form>
     </div>
 </main>
+
+<script>
+    function previewImage(input) {
+        const wrap = document.getElementById('previewWrap');
+        const img  = document.getElementById('previewImg');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => { img.src = e.target.result; wrap.classList.add('visible'); };
+            reader.readAsDataURL(input.files[0]);
+        } else { wrap.classList.remove('visible'); }
+    }
+</script>
 </body>
 </html>

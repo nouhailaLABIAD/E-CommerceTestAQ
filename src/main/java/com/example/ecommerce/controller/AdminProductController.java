@@ -1,106 +1,138 @@
 package com.example.ecommerce.controller;
 
-import jakarta.validation.Valid;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-
 import com.example.ecommerce.entity.Category;
 import com.example.ecommerce.entity.Product;
-import com.example.ecommerce.service.interfaces.CategoryService;
+import com.example.ecommerce.repository.CategoryRepository;
+import com.example.ecommerce.service.FileStorageService;
 import com.example.ecommerce.service.interfaces.ProductService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin/products")
 public class AdminProductController {
 
     private final ProductService productService;
-    private final CategoryService categoryService;
+    private final CategoryRepository categoryRepository;
+    private final FileStorageService fileStorageService;
 
     public AdminProductController(ProductService productService,
-                                  CategoryService categoryService) {
+                                  CategoryRepository categoryRepository,
+                                  FileStorageService fileStorageService) {
         this.productService = productService;
-        this.categoryService = categoryService;
+        this.categoryRepository = categoryRepository;
+        this.fileStorageService = fileStorageService;
     }
 
-    // 🔹 Liste admin
+    // ── Liste ────────────────────────────────────────────────────────────────
     @GetMapping
     public String listProducts(Model model) {
-        model.addAttribute("products",
-                productService.getAllAvailableProducts());
+        model.addAttribute("products", productService.getAllAvailableProducts());
         return "admin-products";
     }
 
-    // 🔹 Form création
+    // ── Formulaire création ──────────────────────────────────────────────────
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("product", new Product());
-        model.addAttribute("categories",
-                categoryService.getAllCategories());
+        model.addAttribute("categories", categoryRepository.findAll());
         return "product-form";
     }
 
-    // 🔹 SAVE AVEC VALIDATION
+    // ── Créer produit ────────────────────────────────────────────────────────
     @PostMapping
-    public String saveProduct(@Valid @ModelAttribute Product product,
-                              BindingResult result,
-                              Model model) {
+    public String createProduct(
+            @RequestParam("nom") String nom,
+            @RequestParam("description") String description,
+            @RequestParam("prix") double prix,
+            @RequestParam("stock") int stock,
+            @RequestParam("categoryId") Long categoryId,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            Model model) throws IOException {
 
-        // 🔴 Si erreur validation
-        if (result.hasErrors()) {
-            model.addAttribute("categories",
-                    categoryService.getAllCategories());
+        Category category = categoryRepository.findById(categoryId).orElse(null);
+        if (category == null) {
+            model.addAttribute("product", new Product());
+            model.addAttribute("categories", categoryRepository.findAll());
+            model.addAttribute("error", "Catégorie introuvable.");
             return "product-form";
         }
 
-        // 🔹 Recharger la vraie catégorie depuis la base
-        Category category =
-                categoryService.getCategoryById(
-                        product.getCategory().getId());
-
+        Product product = new Product();
+        product.setNom(nom);
+        product.setDescription(description);
+        product.setPrix(prix);
+        product.setStock(stock);
         product.setCategory(category);
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            product.setImageUrl(fileStorageService.saveImage(imageFile, "products"));
+        }
 
         productService.createProduct(product);
-
         return "redirect:/admin/products";
     }
 
-    // 🔹 Form update
+    // ── Formulaire édition ───────────────────────────────────────────────────
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
-        model.addAttribute("product",
-                productService.getProductById(id));
-        model.addAttribute("categories",
-                categoryService.getAllCategories());
+        Product product = productService.getProductById(id);
+        List<Category> categories = categoryRepository.findAll();
+        model.addAttribute("product", product);
+        model.addAttribute("categories", categories);
         return "product-form";
     }
 
-    // 🔹 UPDATE AVEC VALIDATION
-    @PostMapping("/update/{id}")
-    public String updateProduct(@PathVariable Long id,
-                                @Valid @ModelAttribute Product product,
-                                BindingResult result,
-                                Model model) {
+    // ── Mettre à jour produit ────────────────────────────────────────────────
+    @PostMapping("/edit/{id}")
+    public String updateProduct(
+            @PathVariable Long id,
+            @RequestParam("nom") String nom,
+            @RequestParam("description") String description,
+            @RequestParam("prix") double prix,
+            @RequestParam("stock") int stock,
+            @RequestParam("categoryId") Long categoryId,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            @RequestParam(value = "existingImageUrl", required = false) String existingImageUrl,
+            Model model) throws IOException {
 
-        if (result.hasErrors()) {
-            model.addAttribute("categories",
-                    categoryService.getAllCategories());
+        Category category = categoryRepository.findById(categoryId).orElse(null);
+        if (category == null) {
+            Product product = productService.getProductById(id);
+            model.addAttribute("product", product);
+            model.addAttribute("categories", categoryRepository.findAll());
+            model.addAttribute("error", "Catégorie introuvable.");
             return "product-form";
         }
 
-        Category category =
-                categoryService.getCategoryById(
-                        product.getCategory().getId());
+        // Construire le produit mis à jour
+        Product updatedProduct = new Product();
+        updatedProduct.setNom(nom);
+        updatedProduct.setDescription(description);
+        updatedProduct.setPrix(prix);
+        updatedProduct.setStock(stock);
+        updatedProduct.setCategory(category);
 
-        product.setCategory(category);
+        // Image : nouvelle ou conserver l'ancienne
+        if (imageFile != null && !imageFile.isEmpty()) {
+            if (existingImageUrl != null && !existingImageUrl.isEmpty()) {
+                fileStorageService.deleteImage(existingImageUrl);
+            }
+            updatedProduct.setImageUrl(fileStorageService.saveImage(imageFile, "products"));
+        } else {
+            updatedProduct.setImageUrl(existingImageUrl);
+        }
 
-        productService.updateProduct(id, product);
-
+        productService.updateProduct(id, updatedProduct);
         return "redirect:/admin/products";
     }
 
-    // 🔹 Soft delete
+    // ── Supprimer produit (soft delete) ──────────────────────────────────────
     @GetMapping("/delete/{id}")
     public String deleteProduct(@PathVariable Long id) {
         productService.softDeleteProduct(id);

@@ -13,12 +13,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-
 @Entity
 @Table(name = "products")
 public class Product {
 
-   @Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -37,19 +36,18 @@ public class Product {
     @Column(nullable = false)
     private boolean deleted = false;
 
+    // Chemin de l'image stockée (ex: /uploads/products/photo.jpg)
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @NotNull(message = "La catégorie est obligatoire")
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 
-public boolean isDeleted() {
-    return deleted;
-}
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 
-public void setDeleted(boolean deleted) {
-    this.deleted = deleted;
-}
-    // Getters & Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -64,6 +62,9 @@ public void setDeleted(boolean deleted) {
 
     public int getStock() { return stock; }
     public void setStock(int stock) { this.stock = stock; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }

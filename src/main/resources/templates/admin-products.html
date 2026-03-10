@@ -3,310 +3,78 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Admin - Lalla Délices</title>
+    <title>Produits - Lalla Délices Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
-    <style>
-        :root {
-            --cream: #F8F3EE;
-            --cream-deep: #F0E8DF;
-            --warm-white: #FDFAF7;
-            --sand: #ffeed9;
-            --sand-dark: #D4BFA8;
-            --taupe: #B8A090;
-            --mocha: #8C6E5A;
-            --espresso: #5C4033;
-            --gold: #C9A96E;
-            --gold-light: #f8d99a;
-            --gold-pale: #F5EDDC;
-            --sage: #A8B89C;
-            --sage-deep: #849A76;
-            --ink: #3A3028;
-            --ink-soft: #6B5C52;
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Jost', sans-serif;
-            background: var(--cream);
-            color: var(--ink);
-            min-height: 100vh;
-            display: flex;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 240px;
-            background: var(--warm-white);
-            border-right: 1px solid var(--sand);
-            padding: 2rem 1.2rem;
-            display: flex; flex-direction: column; gap: .35rem;
-            flex-shrink: 0; min-height: 100vh;
-        }
-        .brand {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.3rem; font-weight: 500;
-            color: var(--espresso);
-            margin-bottom: 2rem; padding-left: .5rem;
-            text-decoration: none; display: block;
-        }
-        .brand em { color: var(--gold); font-style: italic; }
-
-        .sidebar-label {
-            font-size: .7rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: .08em;
-            color: var(--taupe); padding: .5rem .9rem; margin-top: .5rem;
-        }
-        .sidebar a {
-            display: flex; align-items: center; gap: .7rem;
-            padding: .65rem .9rem; border-radius: 10px;
-            color: var(--ink-soft); text-decoration: none;
-            font-size: .9rem; transition: background .2s, color .2s;
-        }
-        .sidebar a:hover, .sidebar a.active {
-            background: rgba(201,169,110,0.15); color: var(--espresso);
-        }
-        .sidebar .logout { margin-top: auto; }
-        .sidebar .logout a { color: #c2185b; }
-        .sidebar .logout a:hover { background: rgba(220,53,69,0.1); color: #c2185b; }
-
-        /* MAIN */
-        .main { flex: 1; padding: 2.5rem; overflow-y: auto; }
-
-        .topbar {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 2rem;
-        }
-        .topbar h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 600; color: var(--espresso); }
-        .topbar p { color: var(--taupe); font-size: .85rem; margin-top: .2rem; }
-
-        .btn-new {
-            display: inline-flex; align-items: center; gap: .5rem;
-            padding: .7rem 1.4rem;
-            background: var(--espresso);
-            border: none; border-radius: 12px;
-            color: var(--cream); font-family: inherit;
-            font-size: .9rem; font-weight: 500;
-            cursor: pointer; text-decoration: none;
-            transition: background .2s, transform .15s;
-        }
-        .btn-new:hover { background: var(--gold); transform: translateY(-1px); }
-
-        /* SEARCH BAR */
-        .toolbar {
-            display: flex; align-items: center; gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .search-wrap {
-            flex: 1; max-width: 340px;
-            display: flex; align-items: center; gap: .6rem;
-            background: var(--warm-white);
-            border: 1px solid var(--sand);
-            border-radius: 10px;
-            padding: .6rem 1rem;
-        }
-        .search-wrap input {
-            background: transparent; border: none; outline: none;
-            color: var(--ink); font-family: inherit; font-size: .9rem;
-            flex: 1;
-        }
-        .search-wrap input::placeholder { color: var(--taupe); }
-
-        /* TABLE */
-        .table-card {
-            background: var(--warm-white);
-            border: 1px solid var(--sand);
-            border-radius: 18px; overflow: hidden;
-        }
-        table { width: 100%; border-collapse: collapse; }
-        thead th {
-            text-align: left;
-            padding: .9rem 1.3rem;
-            font-size: .77rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: .05em;
-            color: var(--taupe);
-            background: var(--cream);
-            border-bottom: 1px solid var(--sand);
-        }
-        tbody td {
-            padding: 1rem 1.3rem;
-            font-size: .88rem; color: var(--ink-soft);
-            border-bottom: 1px solid var(--sand);
-            vertical-align: middle;
-        }
-        tbody tr:last-child td { border-bottom: none; }
-        tbody tr:hover td { background: var(--gold-pale); }
-
-        .product-cell {
-            display: flex; align-items: center; gap: .85rem;
-        }
-        .product-thumb {
-            width: 38px; height: 38px; border-radius: 10px;
-            background: linear-gradient(135deg, var(--gold-pale), var(--gold-light));
-            display: flex; align-items: center; justify-content: center;
-            font-size: .95rem; flex-shrink: 0;
-        }
-        .product-name-cell { font-weight: 600; color: var(--espresso); font-size: .9rem; }
-
-        .price-cell { font-weight: 600; color: var(--gold); }
-
-        .stock-badge {
-            display: inline-flex; align-items: center; gap: .3rem;
-            padding: .25rem .7rem; border-radius: 999px;
-            font-size: .75rem; font-weight: 600;
-        }
-        .stock-badge.ok   { background: rgba(168,184,156,0.2);  color: var(--sage-deep); }
-        .stock-badge.low  { background: rgba(245,158,11,0.1);  color: #f59e0b; }
-        .stock-badge.out  { background: rgba(220,53,69,0.1); color: #c2185b; }
-
-        .actions {
-            display: flex; align-items: center; gap: .5rem;
-        }
-        .btn-edit {
-            display: inline-flex; align-items: center; gap: .35rem;
-            padding: .4rem .9rem;
-            background: rgba(201,169,110,0.15);
-            border: 1px solid rgba(201,169,110,0.3);
-            border-radius: 8px; color: var(--espresso);
-            font-size: .78rem; font-weight: 600;
-            text-decoration: none;
-            transition: background .2s;
-        }
-        .btn-edit:hover { background: var(--gold); }
-        .btn-delete {
-            display: inline-flex; align-items: center; gap: .35rem;
-            padding: .4rem .9rem;
-            background: rgba(220,53,69,0.08);
-            border: 1px solid rgba(220,53,69,0.2);
-            border-radius: 8px; color: #c2185b;
-            font-size: .78rem; font-weight: 600;
-            text-decoration: none;
-            transition: background .2s;
-        }
-        .btn-delete:hover { background: rgba(220,53,69,0.2); }
-
-        /* Empty state */
-        .empty-state {
-            text-align: center; padding: 4rem 1rem; color: var(--taupe);
-        }
-        .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
-        .empty-state p { font-size: .95rem; }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/lalla-delices.css}"/>
 </head>
-<body>
+<body class="admin-layout">
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
     <a class="brand" href="/admin">Lalla <em>Délices</em></a>
-
     <span class="sidebar-label">Principal</span>
     <a href="/admin/homeAdmin">🏠 Dashboard</a>
     <a href="/admin/products" class="active">📦 Produits</a>
     <a href="/admin/categories">🏷 Catégories</a>
     <a href="/admin/orders">📋 Commandes</a>
-
     <span class="sidebar-label">Compte</span>
     <a href="/admin/settings">⚙️ Paramètres</a>
-
-    <div class="logout">
-        <a href="/logout">🚪 Déconnexion</a>
-    </div>
+    <div class="logout"><a href="/logout">🚪 Déconnexion</a></div>
 </aside>
 
-<!-- MAIN -->
-<main class="main">
-
-    <!-- TOP BAR -->
-    <div class="topbar">
+<main class="admin-main">
+    <div class="page-topbar">
         <div>
             <h1>Gestion des produits</h1>
             <p>Créez, modifiez et supprimez vos produits</p>
         </div>
-        <a href="/admin/products/new" class="btn-new">
-            ➕ Nouveau produit
-        </a>
+        <a href="/admin/products/new" class="btn btn-primary">➕ Nouveau produit</a>
     </div>
 
-    <!-- TOOLBAR -->
-    <div class="toolbar">
-        <div class="search-wrap">
-            <span style="color:var(--taupe)">🔍</span>
-            <input type="text" placeholder="Rechercher un produit..."/>
-        </div>
-    </div>
-
-    <!-- TABLE -->
     <div class="table-card">
         <table>
             <thead>
                 <tr>
-                    <th>Produit</th>
-                    <th>Prix</th>
-                    <th>Stock</th>
-                    <th>Actions</th>
+                    <th>Produit</th><th>Catégorie</th><th>Prix</th><th>Stock</th><th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Ligne vide si pas de produits -->
                 <tr th:if="${#lists.isEmpty(products)}">
-                    <td colspan="4">
+                    <td colspan="5">
                         <div class="empty-state">
                             <div class="empty-icon">📦</div>
-                            <p>Aucun produit pour l'instant.<br/>
-                               <a href="/admin/products/new"
-                                  style="color:var(--gold);text-decoration:none;font-weight:600">
-                                   Créer le premier produit →
-                               </a>
+                            <p>Aucun produit.<br/>
+                               <a href="/admin/products/new" style="color:var(--gold);text-decoration:none;font-weight:600">Créer le premier →</a>
                             </p>
                         </div>
                     </td>
                 </tr>
-
                 <tr th:each="p : ${products}">
-                    <!-- NOM -->
                     <td>
-                        <div class="product-cell">
-                            <div class="product-thumb">🛍</div>
-                            <span class="product-name-cell" th:text="${p.nom}">Produit</span>
+                        <div class="item-cell">
+                            <div class="item-thumb">
+                                <img th:if="${p.imageUrl != null and !p.imageUrl.isEmpty()}" th:src="${p.imageUrl}" th:alt="${p.nom}"/>
+                                <span th:if="${p.imageUrl == null or p.imageUrl.isEmpty()}">🛍</span>
+                            </div>
+                            <span class="item-name" th:text="${p.nom}">Produit</span>
                         </div>
                     </td>
-
-                    <!-- PRIX -->
+                    <td><span class="item-sub" th:text="${p.category != null ? p.category.nom : '—'}">—</span></td>
+                    <td><span class="price-cell"><span th:text="${p.prix}">0.00</span> €</span></td>
                     <td>
-                        <span class="price-cell">
-                            <span th:text="${p.prix}">0.00</span> €
-                        </span>
-                    </td>
-
-                    <!-- STOCK -->
-                    <td>
-                        <span class="stock-badge"
-                              th:classappend="${p.stock > 10 ? 'ok' : (p.stock > 0 ? 'low' : 'out')}">
+                        <span class="stock-badge" th:classappend="${p.stock > 10 ? 'ok' : (p.stock > 0 ? 'low' : 'out')}">
                             ● <span th:text="${p.stock}">0</span>
                         </span>
                     </td>
-
-                    <!-- ACTIONS -->
                     <td>
                         <div class="actions">
-                            <a class="btn-edit"
-                               th:href="@{/admin/products/edit/{id}(id=${p.id})}">
-                                ✏️ Éditer
-                            </a>
-                            <a class="btn-delete"
-                               th:href="@{/admin/products/delete/{id}(id=${p.id})}"
-                               onclick="return confirm('Supprimer ce produit ?')">
-                                🗑 Supprimer
-                            </a>
+                            <a class="btn btn-sm btn-secondary" th:href="@{/admin/products/edit/{id}(id=${p.id})}">✏️ Éditer</a>
+                            <a class="btn btn-sm btn-danger" th:href="@{/admin/products/delete/{id}(id=${p.id})}" onclick="return confirm('Supprimer ce produit ?')">🗑 Supprimer</a>
                         </div>
                     </td>
                 </tr>
             </tbody>
         </table>
     </div>
-
 </main>
-
 </body>
 </html>
-

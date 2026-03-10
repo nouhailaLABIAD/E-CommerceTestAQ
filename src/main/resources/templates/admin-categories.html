@@ -5,69 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Catégories - Lalla Délices Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
-    <style>
-        :root {
-            --cream: #F8F3EE;
-            --warm-white: #FDFAF7;
-            --sand: #ffeed9;
-            --sand-dark: #D4BFA8;
-            --taupe: #B8A090;
-            --espresso: #5C4033;
-            --gold: #C9A96E;
-            --gold-pale: #F5EDDC;
-            --ink: #3A3028;
-            --ink-soft: #6B5C52;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--ink); }
-        .sidebar { width: 240px; background: var(--warm-white); border-right: 1px solid var(--sand); padding: 2rem 1.2rem; position: fixed; height: 100vh; display: flex; flex-direction: column; }
-        .brand { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--espresso); text-decoration: none; margin-bottom: 2rem; }
-        .brand em { color: var(--gold); font-style: italic; }
-        .sidebar a { display: flex; align-items: center; gap: .7rem; padding: .65rem .9rem; border-radius: 10px; color: var(--ink-soft); text-decoration: none; font-size: .9rem; transition: all .2s; }
-        .sidebar a:hover, .sidebar a.active { background: rgba(201,169,110,0.15); color: var(--espresso); }
-        .main { margin-left: 240px; padding: 2.5rem 3rem; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
-        .page-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--espresso); }
-        .btn-primary { background: var(--espresso); color: var(--cream); padding: 12px 24px; border-radius: 10px; text-decoration: none; font-size: .9rem; transition: all .3s; }
-        .btn-primary:hover { background: var(--gold); }
-        .table-card { background: var(--warm-white); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: var(--gold-pale); padding: 16px 20px; text-align: left; font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; color: var(--espresso); }
-        td { padding: 16px 20px; border-bottom: 1px solid var(--sand); }
-        tr:last-child td { border-bottom: none; }
-        .actions { display: flex; gap: 10px; }
-        .btn-edit { padding: 6px 12px; background: var(--gold-pale); border: 1px solid var(--gold); border-radius: 6px; color: var(--espresso); text-decoration: none; font-size: .8rem; }
-        .btn-edit:hover { background: var(--gold); color: white; }
-        .btn-delete { padding: 6px 12px; background: rgba(220,53,69,0.1); border: 1px solid #dc3545; border-radius: 6px; color: #dc3545; text-decoration: none; font-size: .8rem; }
-        .btn-delete:hover { background: #dc3545; color: white; }
-        .empty-state { text-align: center; padding: 60px 20px; color: var(--taupe); }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/lalla-delices.css}"/>
 </head>
-<body>
+<body class="admin-layout">
+
 <aside class="sidebar">
     <a class="brand" href="/admin/homeAdmin">Lalla <em>Délices</em></a>
     <a href="/admin/homeAdmin">🏠 Dashboard</a>
     <a href="/admin/products">📦 Produits</a>
     <a href="/admin/categories" class="active">🏷 Catégories</a>
     <a href="/admin/orders">📋 Commandes</a>
-    <div style="margin-top: auto;"><a href="/logout">🚪 Déconnexion</a></div>
+    <div class="logout"><a href="/logout">🚪 Déconnexion</a></div>
 </aside>
-<main class="main">
-    <div class="page-header">
-        <h1 class="page-title">Catégories</h1>
-        <a href="/admin/categories/new" class="btn-primary">+ Nouvelle catégorie</a>
+
+<main class="admin-main">
+    <div class="page-topbar">
+        <h1>Catégories</h1>
+        <a href="/admin/categories/new" class="btn btn-primary">+ Nouvelle catégorie</a>
     </div>
+
     <div class="table-card">
         <table th:if="${!categories.empty}">
-            <thead><tr><th>ID</th><th>Nom</th><th>Nombre de produits</th><th>Actions</th></tr></thead>
+            <thead>
+                <tr><th>Catégorie</th><th>Nb produits</th><th>Image</th><th>Actions</th></tr>
+            </thead>
             <tbody>
                 <tr th:each="category : ${categories}">
-                    <td th:text="${category.id}">1</td>
-                    <td th:text="${category.nom}">Pâtisseries</td>
+                    <td>
+                        <div class="item-cell">
+                            <div class="item-thumb">
+                                <img th:if="${category.imageUrl != null and !category.imageUrl.isEmpty()}"
+                                     th:src="${category.imageUrl}" th:alt="${category.nom}"/>
+                                <span th:if="${category.imageUrl == null or category.imageUrl.isEmpty()}">🏷</span>
+                            </div>
+                            <span class="item-name" th:text="${category.nom}">Pâtisseries</span>
+                        </div>
+                    </td>
                     <td th:text="${category.products != null ? category.products.size() : 0}">0</td>
-                    <td class="actions">
-                        <a th:href="@{/admin/categories/edit/{id}(id=${category.id})}" class="btn-edit">Modifier</a>
-                        <a th:href="@{/admin/categories/delete/{id}(id=${category.id})}" class="btn-delete" onclick="return confirm('Êtes-vous sûr?')">Supprimer</a>
+                    <td>
+                        <span th:if="${category.imageUrl != null and !category.imageUrl.isEmpty()}"
+                              class="stock-badge ok">✅ Définie</span>
+                        <span th:if="${category.imageUrl == null or category.imageUrl.isEmpty()}"
+                              class="item-sub">— Aucune</span>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <a class="btn btn-sm btn-secondary" th:href="@{/admin/categories/edit/{id}(id=${category.id})}">✏️ Modifier</a>
+                            <a class="btn btn-sm btn-danger" th:href="@{/admin/categories/delete/{id}(id=${category.id})}"
+                               onclick="return confirm('Êtes-vous sûr?')">🗑 Supprimer</a>
+                        </div>
                     </td>
                 </tr>
             </tbody>

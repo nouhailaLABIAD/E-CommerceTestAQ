@@ -1,260 +1,70 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Catalogue - Lalla Délices</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/lalla-delices.css}"/>
+    <!-- Style spécifique à products.html : card avec effet overlay gold -->
     <style>
-        :root {
-            --cream: #F8F3EE;
-            --cream-deep: #F0E8DF;
-            --warm-white: #FDFAF7;
-            --sand: #ffeed9;
-            --sand-dark: #D4BFA8;
-            --taupe: #B8A090;
-            --mocha: #8C6E5A;
-            --espresso: #5C4033;
-            --gold: #C9A96E;
-            --gold-light: #f8d99a;
-            --gold-pale: #F5EDDC;
-            --sage: #A8B89C;
-            --sage-deep: #849A76;
-            --ink: #3A3028;
-            --ink-soft: #6B5C52;
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Jost', sans-serif;
-            background: var(--cream);
-            color: var(--ink);
-            min-height: 100vh;
-        }
-
-        /* NAV */
-        nav {
-            background: var(--warm-white);
-            border-bottom: 1px solid var(--sand);
-            padding: 1rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .brand {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.4rem;
-            font-weight: 500;
-            color: var(--espresso);
-            text-decoration: none;
-        }
-        .brand em { color: var(--gold); font-style: italic; }
-        .nav-links a {
-            color: var(--ink-soft);
-            text-decoration: none;
-            margin-left: 1.5rem;
-            font-size: .9rem;
-            transition: color .2s;
-        }
-        .nav-links a:hover { color: var(--espresso); }
-
-        /* HERO SEARCH */
-        .hero {
-            text-align: center;
-            padding: 4rem 1rem 2.5rem;
-            background: var(--warm-white);
-        }
-        .hero h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.8rem;
-            font-weight: 600;
-            color: var(--espresso);
-            margin-bottom: .75rem;
-        }
-        .hero p { color: var(--taupe); font-size: 1rem; margin-bottom: 2rem; }
-
-        .search-bar {
-            display: flex;
-            max-width: 520px;
-            margin: 0 auto;
-            border-radius: 14px;
-            overflow: hidden;
-            border: 1px solid var(--sand);
-            background: var(--cream);
-        }
-        .search-bar input {
-            flex: 1;
-            padding: .85rem 1.2rem;
-            background: transparent;
-            border: none;
-            outline: none;
-            color: var(--ink);
-            font-family: inherit;
-            font-size: .95rem;
-        }
-        .search-bar input::placeholder { color: var(--taupe); }
-        .search-bar button {
-            padding: .85rem 1.6rem;
-            background: var(--espresso);
-            border: none;
-            color: var(--cream);
-            font-weight: 600;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: .9rem;
-            transition: background .2s;
-        }
-        .search-bar button:hover { background: var(--gold); }
-
-        /* GRID */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1.5rem 4rem;
-        }
-        .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.8rem;
-        }
-        .section-header h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 600; color: var(--espresso); }
-        .badge {
-            background: rgba(201,169,110,0.15);
-            color: var(--gold);
-            border: 1px solid var(--gold);
-            padding: .25rem .75rem;
-            border-radius: 999px;
-            font-size: .8rem;
-            font-weight: 500;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 1.5rem;
-        }
-
-        /* CARD */
-        .card {
+        .catalogue-card {
             background: var(--warm-white);
             border: 1px solid var(--sand);
-            border-radius: 18px;
+            border-radius: var(--radius-lg);
             padding: 1.4rem;
-            color: inherit;
             display: block;
+            color: inherit;
             transition: transform .25s, border-color .25s, box-shadow .25s;
             position: relative;
             overflow: hidden;
         }
-        .card::before {
+        .catalogue-card::before {
             content: '';
-            position: absolute;
-            inset: 0;
+            position: absolute; inset: 0;
             background: linear-gradient(135deg, var(--gold-pale), var(--sand));
             opacity: 0;
             transition: opacity .25s;
             pointer-events: none;
         }
-        .card:hover {
-            transform: translateY(-4px);
-            border-color: var(--gold);
-            box-shadow: 0 12px 40px rgba(92, 64, 51, 0.12);
-        }
-        .card:hover::before { opacity: 1; }
-
-        .card-icon {
-            width: 48px; height: 48px;
-            border-radius: 12px;
+        .catalogue-card:hover { transform: translateY(-4px); border-color: var(--gold); box-shadow: 0 12px 40px rgba(92,64,51,0.12); }
+        .catalogue-card:hover::before { opacity: 1; }
+        .catalogue-card .card-icon {
+            width: 48px; height: 48px; border-radius: 12px;
             background: linear-gradient(135deg, var(--gold-light), var(--gold));
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-            position: relative;
+            font-size: 1.3rem; margin-bottom: 1rem; position: relative;
         }
-
-        /* Lien sur le titre uniquement */
-        .card-title-link {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            margin-bottom: .4rem;
-            position: relative;
-        }
-        .card-title-link:hover h3 { color: var(--gold); }
-
-        .card h3 {
+        .catalogue-card h3 {
             font-family: 'Playfair Display', serif;
-            font-size: 1rem;
-            font-weight: 600;
+            font-size: 1rem; font-weight: 600;
             color: var(--espresso);
-            transition: color .2s;
-            position: relative;
+            transition: color .2s; position: relative;
         }
+        .catalogue-card .card-title-link { text-decoration: none; color: inherit; display: block; margin-bottom: .4rem; position: relative; }
+        .catalogue-card .card-title-link:hover h3 { color: var(--gold); }
+        .catalogue-card .price { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 600; color: var(--gold); margin-bottom: 1rem; position: relative; }
+        .catalogue-card .price span { font-size: .75rem; color: var(--taupe); font-weight: 400; font-family: 'Jost', sans-serif; }
+        .catalogue-card .card-footer { padding-top: .8rem; border-top: 1px solid var(--sand); display: flex; align-items: center; justify-content: space-between; gap: .5rem; position: relative; }
 
-        .card .price {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--gold);
-            margin-bottom: 1rem;
-            position: relative;
-        }
-        .card .price span { font-size: .75rem; color: var(--taupe); font-weight: 400; font-family: 'Jost', sans-serif; }
-
-        .card-footer {
-            padding-top: .8rem;
-            border-top: 1px solid var(--sand);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: .5rem;
-            position: relative;
-        }
-
-        /* Voir détail */
-        .voir-detail {
-            color: var(--taupe);
-            font-size: .78rem;
-            text-decoration: none;
-            transition: color .2s;
-        }
-        .voir-detail:hover { color: var(--gold); }
-
-        /* Bouton Ajouter */
-        .btn-sm {
-            padding: .4rem .9rem;
-            border-radius: 8px;
-            background: var(--espresso);
-            color: var(--cream);
-            font-size: .78rem;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            font-family: inherit;
-            transition: background .2s;
-            white-space: nowrap;
-        }
-        .btn-sm:hover { background: var(--gold); }
+        .catalogue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
+        .catalogue-section-header { display: flex; align-items: center; justify-content: space-between; margin: 2rem 0 1.8rem; }
+        .catalogue-section-header h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 600; color: var(--espresso); }
     </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
+<!-- ─── NAV ────────────────────────────────────────────────── -->
+<nav class="client-nav">
     <a class="brand" href="/">Lalla <em>Délices</em></a>
     <div class="nav-links">
         <a href="/">Accueil</a>
         <a href="/products">Catalogue</a>
-        <a href="/cart">🛒 Panier</a>
+        <a href="/cart" class="cart-badge">🛒 Panier</a>
     </div>
 </nav>
 
-<!-- HERO -->
+<!-- ─── HERO ───────────────────────────────────────────────── -->
 <div class="hero">
     <h1>Notre Catalogue</h1>
     <p>Découvrez notre sélection de pâtisseries artisanales</p>
@@ -266,47 +76,32 @@
     </form>
 </div>
 
-<!-- GRID -->
-<div class="container">
-    <div class="section-header">
+<!-- ─── GRILLE PRODUITS ────────────────────────────────────── -->
+<div class="container" style="padding-top:2rem;">
+    <div class="catalogue-section-header">
         <h2>Tous les produits</h2>
-        <span class="badge">Nouveau</span>
+        <span class="count-badge">Nouveau</span>
     </div>
 
-    <div class="grid">
-        <div class="card" th:each="p : ${products}">
-
+    <div class="catalogue-grid">
+        <div class="catalogue-card" th:each="p : ${products}">
             <div class="card-icon">🛍</div>
-
-            <!-- Lien vers la page détail sur le titre -->
-            <a class="card-title-link"
-               th:href="@{/products/{id}(id=${p.id})}">
+            <a class="card-title-link" th:href="@{/products/{id}(id=${p.id})}">
                 <h3 th:text="${p.nom}">Nom Produit</h3>
             </a>
-
             <div class="price">
-                <span th:text="${p.prix}">0.00</span>
-                <span> €</span>
+                <span th:text="${p.prix}">0.00</span><span> €</span>
             </div>
-
             <div class="card-footer">
-                <!-- Lien Voir le détail séparé -->
-                <a class="voir-detail"
-                   th:href="@{/products/{id}(id=${p.id})}">
-                    Voir le détail →
-                </a>
-
-                <!-- Bouton indépendant -->
-                <button class="btn-sm"
+                <a class="voir-detail" th:href="@{/products/{id}(id=${p.id})}">Voir le détail →</a>
+                <button class="btn btn-primary btn-sm"
                         th:onclick="|window.location.href='@{/cart/add/{id}(id=${p.id})}'|">
                     🛒 Ajouter
                 </button>
             </div>
-
         </div>
     </div>
 </div>
 
 </body>
 </html>
-
