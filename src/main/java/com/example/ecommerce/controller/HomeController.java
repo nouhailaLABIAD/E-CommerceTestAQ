@@ -10,9 +10,6 @@ public class HomeController {
     public String homeAdmin() {
         return "homeAdmin"; // Thymeleaf page: homeAdmin.html
     }
-
-    @GetMapping("/client/homeUser")
-    public String homeUser() {
-        return "homeUser"; // Thymeleaf page: homeUser.html
-    }
+    
+    // Note: /client/homePatisserie est géré par ClientProductController
 }

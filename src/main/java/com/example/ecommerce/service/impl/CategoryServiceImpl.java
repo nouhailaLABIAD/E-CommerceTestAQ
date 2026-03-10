@@ -21,10 +21,28 @@ public class CategoryServiceImpl implements CategoryService {
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
-      @Override
+@Override
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Category not found"));
+    }
+    
+    @Override
+    public Category createCategory(Category category) {
+        return categoryRepository.save(category);
+    }
+    
+    @Override
+    public Category updateCategory(Long id, Category category) {
+        Category existing = getCategoryById(id);
+        existing.setNom(category.getNom());
+        return categoryRepository.save(existing);
+    }
+    
+    @Override
+    public void deleteCategory(Long id) {
+        Category category = getCategoryById(id);
+        categoryRepository.delete(category);
     }
 }

@@ -3,22 +3,39 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title th:text="${product.nom}">Produit</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <title th:text="${product.nom} + ' - Lalla Délices'">Produit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
     <style>
+        :root {
+            --cream: #F8F3EE;
+            --cream-deep: #F0E8DF;
+            --warm-white: #FDFAF7;
+            --sand: #ffeed9;
+            --sand-dark: #D4BFA8;
+            --taupe: #B8A090;
+            --mocha: #8C6E5A;
+            --espresso: #5C4033;
+            --gold: #C9A96E;
+            --gold-light: #f8d99a;
+            --gold-pale: #F5EDDC;
+            --sage: #A8B89C;
+            --sage-deep: #849A76;
+            --ink: #3A3028;
+            --ink-soft: #6B5C52;
+        }
+
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: #0f0f1a;
-            color: #e2e8f0;
+            font-family: 'Jost', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
             min-height: 100vh;
         }
 
         nav {
-            background: rgba(255,255,255,0.04);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255,255,255,0.08);
+            background: var(--warm-white);
+            border-bottom: 1px solid var(--sand);
             padding: 1rem 2rem;
             display: flex;
             align-items: center;
@@ -26,17 +43,17 @@
             position: sticky; top: 0; z-index: 100;
         }
         .brand {
-            font-size: 1.4rem; font-weight: 700;
-            background: linear-gradient(135deg, #818cf8, #c084fc);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;    
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem; font-weight: 500;
+            color: var(--espresso);
             text-decoration: none;
         }
+        .brand em { color: var(--gold); font-style: italic; }
         .nav-links a {
-            color: #94a3b8; text-decoration: none;
+            color: var(--ink-soft); text-decoration: none;
             margin-left: 1.5rem; font-size: .9rem; transition: color .2s;
         }
-        .nav-links a:hover { color: #e2e8f0; }
+        .nav-links a:hover { color: var(--espresso); }
 
         .container {
             max-width: 1000px;
@@ -46,19 +63,19 @@
 
         .breadcrumb {
             display: flex; align-items: center; gap: .5rem;
-            font-size: .82rem; color: #475569; margin-bottom: 2.5rem;
+            font-size: .82rem; color: var(--taupe); margin-bottom: 2.5rem;
         }
-        .breadcrumb a { color: #64748b; text-decoration: none; }
-        .breadcrumb a:hover { color: #818cf8; }
-        .breadcrumb span { color: #334155; }
+        .breadcrumb a { color: var(--taupe); text-decoration: none; }
+        .breadcrumb a:hover { color: var(--espresso); }
+        .breadcrumb span { color: var(--ink-soft); }
 
-        /* ── DETAIL CARD ── */
+        /* DETAIL CARD */
         .detail-card {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 3rem;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.07);
+            background: var(--warm-white);
+            border: 1px solid var(--sand);
             border-radius: 24px;
             padding: 2.5rem;
             align-items: start;
@@ -67,19 +84,17 @@
         /* Fake image placeholder */
         .product-visual {
             aspect-ratio: 1;
-            background: linear-gradient(135deg,
-                rgba(129,140,248,0.15) 0%,
-                rgba(192,132,252,0.15) 100%);
+            background: linear-gradient(135deg, var(--gold-pale) 0%, var(--sand) 100%);
             border-radius: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: .5rem;
-            border: 1px solid rgba(255,255,255,0.06);
+            border: 1px solid var(--sand);
         }
         .product-visual .icon { font-size: 4rem; }
-        .product-visual .hint { font-size: .75rem; color: #475569; }
+        .product-visual .hint { font-size: .75rem; color: var(--taupe); }
 
         /* Info side */
         .product-info { display: flex; flex-direction: column; gap: 1.2rem; }
@@ -88,9 +103,9 @@
             display: inline-flex;
             align-items: center;
             gap: .4rem;
-            background: rgba(129,140,248,0.12);
-            border: 1px solid rgba(129,140,248,0.25);
-            color: #818cf8;
+            background: rgba(201,169,110,0.15);
+            border: 1px solid var(--gold);
+            color: var(--gold);
             padding: .3rem .85rem;
             border-radius: 999px;
             font-size: .78rem;
@@ -99,17 +114,18 @@
         }
 
         .product-name {
+            font-family: 'Playfair Display', serif;
             font-size: 2rem;
-            font-weight: 700;
-            color: #f1f5f9;
+            font-weight: 600;
+            color: var(--espresso);
             line-height: 1.2;
         }
 
-        .product-desc { color: #94a3b8; font-size: .95rem; line-height: 1.6; }
+        .product-desc { color: var(--taupe); font-size: .95rem; line-height: 1.6; }
 
         .price-block {
-            background: rgba(129,140,248,0.07);
-            border: 1px solid rgba(129,140,248,0.2);
+            background: var(--gold-pale);
+            border: 1px solid var(--gold);
             border-radius: 14px;
             padding: 1.2rem 1.4rem;
             display: flex;
@@ -117,56 +133,54 @@
             gap: .4rem;
         }
         .price-main {
+            font-family: 'Playfair Display', serif;
             font-size: 2.2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #818cf8, #c084fc);
-            -webkit-background-clip: text;
-            background-clip: text;    
-            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+            color: var(--espresso);
         }
-        .price-unit { font-size: .9rem; color: #64748b; }
+        .price-unit { font-size: .9rem; color: var(--taupe); }
 
         .stock-info {
             display: flex;
             align-items: center;
             gap: .6rem;
             font-size: .87rem;
-            color: #64748b;
+            color: var(--taupe);
         }
         .stock-dot {
             width: 8px; height: 8px; border-radius: 50%;
-            background: #4ade80;
-            box-shadow: 0 0 6px #4ade80;
+            background: var(--sage-deep);
+            box-shadow: 0 0 6px var(--sage-deep);
         }
-        .stock-dot.low { background: #facc15; box-shadow: 0 0 6px #facc15; }
-        .stock-dot.out { background: #f87171; box-shadow: 0 0 6px #f87171; }
+        .stock-dot.low { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+        .stock-dot.out { background: #c2185b; box-shadow: 0 0 6px #c2185b; }
 
-        .divider { height: 1px; background: rgba(255,255,255,0.06); }
+        .divider { height: 1px; background: var(--sand); }
 
         .btn-add {
             width: 100%;
             padding: 1rem;
-            background: linear-gradient(135deg, #818cf8, #c084fc);
+            background: var(--espresso);
             border: none;
             border-radius: 14px;
-            color: #fff;
+            color: var(--cream);
             font-family: inherit;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity .2s, transform .15s;
+            transition: background .2s, transform .15s;
         }
-        .btn-add:hover { opacity: .87; transform: translateY(-2px); }
+        .btn-add:hover { background: var(--gold); transform: translateY(-2px); }
 
         .btn-back {
             display: inline-flex;
             align-items: center;
             gap: .5rem;
             padding: .75rem 1.4rem;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.09);
+            background: var(--cream);
+            border: 1px solid var(--sand-dark);
             border-radius: 12px;
-            color: #94a3b8;
+            color: var(--ink-soft);
             font-family: inherit;
             font-size: .88rem;
             font-weight: 500;
@@ -176,7 +190,7 @@
             width: 100%;
             justify-content: center;
         }
-        .btn-back:hover { background: rgba(255,255,255,0.08); color: #e2e8f0; }
+        .btn-back:hover { background: var(--sand); color: var(--espresso); }
 
         @media (max-width: 680px) {
             .detail-card { grid-template-columns: 1fr; gap: 1.5rem; }
@@ -186,7 +200,7 @@
 <body>
 
 <nav>
-    <a class="brand" href="/">✦ ShopLux</a>
+    <a class="brand" href="/">Lalla <em>Délices</em></a>
     <div class="nav-links">
         <a href="/products">Catalogue</a>
         <a href="/cart">🛒 Panier</a>
@@ -209,7 +223,7 @@
 
         <!-- Visual -->
         <div class="product-visual">
-            <div class="icon">🛍️</div>
+            <div class="icon">🛍</div>
             <span class="hint">Image produit</span>
         </div>
 
@@ -220,7 +234,7 @@
             <h1 class="product-name" th:text="${product.nom}">Nom du produit</h1>
 
             <p class="product-desc" th:text="${product.description}">
-                Description détaillée du produit…
+                Description détaillée du produit...
             </p>
 
             <div class="divider"></div>
@@ -235,7 +249,7 @@
             <div class="stock-info">
                 <div class="stock-dot" th:classappend="${product.stock > 5 ? '' : (product.stock > 0 ? 'low' : 'out')}"></div>
                 En stock :
-                <strong style="color:#e2e8f0" th:text="${product.stock}">0</strong>
+                <strong style="color:var(--espresso)" th:text="${product.stock}">0</strong>
                 unité(s)
             </div>
 
@@ -251,3 +265,4 @@
 
 </body>
 </html>
+

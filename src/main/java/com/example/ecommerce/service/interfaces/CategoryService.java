@@ -7,4 +7,10 @@ import com.example.ecommerce.entity.Category;
 public interface CategoryService {
     List<Category> getAllCategories();
     Category getCategoryById(Long id);
+    
+    // CRUD
+    Category createCategory(Category category);
+    Category updateCategory(Long id, Category category);
+    void deleteCategory(Long id);
 }
+

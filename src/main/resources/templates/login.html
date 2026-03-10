@@ -3,16 +3,33 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Connexion — ShopLux</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"/>
+    <title>Connexion - Lalla Délices</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
     <style>
+        :root {
+            --cream: #F8F3EE;
+            --cream-deep: #F0E8DF;
+            --warm-white: #FDFAF7;
+            --sand: #ffeed9;
+            --sand-dark: #D4BFA8;
+            --taupe: #B8A090;
+            --mocha: #8C6E5A;
+            --espresso: #5C4033;
+            --gold: #C9A96E;
+            --gold-light: #f8d99a;
+            --gold-pale: #F5EDDC;
+            --sage: #A8B89C;
+            --sage-deep: #849A76;
+            --ink: #3A3028;
+            --ink-soft: #6B5C52;
+        }
+
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: #0f0f1a;
-            color: #e2e8f0;
+            font-family: 'Jost', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -21,49 +38,44 @@
             padding: 1rem;
         }
 
-        /* ── FOND ANIMÉ ── */
+        /* FOND */
         body::before {
             content: '';
             position: fixed;
             inset: 0;
             background:
-                radial-gradient(ellipse at 20% 50%, rgba(129,140,248,0.07) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 20%, rgba(192,132,252,0.07) 0%, transparent 60%);
+                radial-gradient(ellipse at 20% 50%, rgba(168, 184, 156, 0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(201, 169, 110, 0.15) 0%, transparent 60%);
             pointer-events: none;
             z-index: 0;
         }
 
-        /* ── BRAND ── */
+        /* BRAND */
         .brand {
-            font-size: 1.6rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #818cf8, #c084fc);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--espresso);
             text-decoration: none;
             margin-bottom: 2rem;
             z-index: 1;
-            letter-spacing: -.01em;
         }
+        .brand em { color: var(--gold); font-style: italic; }
 
-        /* ── CARD ── */
+        /* CARD */
         .login-card {
             position: relative;
             z-index: 1;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: var(--warm-white);
+            border: 1px solid var(--sand);
             border-radius: 24px;
             padding: 2.5rem 2.8rem;
             width: 100%;
             max-width: 420px;
-            backdrop-filter: blur(16px);
-            box-shadow:
-                0 0 0 1px rgba(129,140,248,0.05),
-                0 24px 60px rgba(0,0,0,0.4);
+            box-shadow: 0 24px 60px rgba(92, 64, 51, 0.15);
         }
 
-        /* ── HEADER CARD ── */
+        /* HEADER CARD */
         .card-header {
             text-align: center;
             margin-bottom: 2rem;
@@ -71,31 +83,32 @@
         .card-header .icon {
             width: 56px; height: 56px;
             border-radius: 16px;
-            background: linear-gradient(135deg, #818cf8, #c084fc);
+            background: linear-gradient(135deg, var(--gold-light), var(--gold));
             display: flex; align-items: center; justify-content: center;
             font-size: 1.5rem;
             margin: 0 auto 1.2rem;
-            box-shadow: 0 8px 24px rgba(129,140,248,0.3);
+            box-shadow: 0 8px 24px rgba(201, 169, 110, 0.3);
         }
         .card-header h2 {
+            font-family: 'Playfair Display', serif;
             font-size: 1.5rem;
-            font-weight: 700;
-            color: #f1f5f9;
+            font-weight: 600;
+            color: var(--espresso);
             margin-bottom: .4rem;
         }
         .card-header p {
-            color: #64748b;
+            color: var(--taupe);
             font-size: .88rem;
         }
 
-        /* ── ALERT ERREUR ── */
+        /* ALERT ERREUR */
         .alert-error {
             display: flex;
             align-items: center;
             gap: .6rem;
-            background: rgba(248,113,113,0.08);
-            border: 1px solid rgba(248,113,113,0.25);
-            color: #f87171;
+            background: rgba(220, 53, 69, 0.08);
+            border: 1px solid rgba(220, 53, 69, 0.25);
+            color: #c2185b;
             border-radius: 12px;
             padding: .75rem 1rem;
             font-size: .85rem;
@@ -103,14 +116,14 @@
             font-weight: 500;
         }
 
-        /* ── ALERT LOGOUT ── */
+        /* ALERT LOGOUT */
         .alert-success {
             display: flex;
             align-items: center;
             gap: .6rem;
-            background: rgba(74,222,128,0.08);
-            border: 1px solid rgba(74,222,128,0.25);
-            color: #4ade80;
+            background: rgba(168, 184, 156, 0.2);
+            border: 1px solid var(--sage-deep);
+            color: var(--sage-deep);
             border-radius: 12px;
             padding: .75rem 1rem;
             font-size: .85rem;
@@ -118,7 +131,7 @@
             font-weight: 500;
         }
 
-        /* ── FORM ── */
+        /* FORM */
         form {
             display: flex;
             flex-direction: column;
@@ -134,7 +147,7 @@
         label {
             font-size: .8rem;
             font-weight: 600;
-            color: #94a3b8;
+            color: var(--espresso);
             text-transform: uppercase;
             letter-spacing: .06em;
         }
@@ -156,56 +169,58 @@
         input[type="password"] {
             width: 100%;
             padding: .78rem 1rem .78rem 2.6rem;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: var(--cream);
+            border: 1px solid var(--sand-dark);
             border-radius: 12px;
-            color: #e2e8f0;
+            color: var(--ink);
             font-family: inherit;
             font-size: .95rem;
             outline: none;
             transition: border-color .2s, box-shadow .2s, background .2s;
         }
         input[type="text"]::placeholder,
-        input[type="password"]::placeholder { color: #475569; }
+        input[type="password"]::placeholder { color: var(--taupe); }
 
         input[type="text"]:focus,
         input[type="password"]:focus {
-            border-color: rgba(129,140,248,0.6);
-            background: rgba(129,140,248,0.05);
-            box-shadow: 0 0 0 3px rgba(129,140,248,0.1);
+            border-color: var(--gold);
+            background: var(--warm-white);
+            box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.2);
         }
 
-        /* ── BOUTON ── */
+        /* BOUTON */
         .btn-login {
             width: 100%;
             padding: .9rem;
             margin-top: .4rem;
-            background: linear-gradient(135deg, #818cf8, #c084fc);
+            background: var(--espresso);
             border: none;
             border-radius: 12px;
-            color: #fff;
+            color: var(--cream);
             font-family: inherit;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: opacity .2s, transform .15s, box-shadow .2s;
             letter-spacing: .01em;
-            box-shadow: 0 4px 20px rgba(129,140,248,0.25);
+            box-shadow: 0 4px 20px rgba(92, 64, 51, 0.25);
         }
         .btn-login:hover {
-            opacity: .88;
+            opacity: .9;
             transform: translateY(-2px);
-            box-shadow: 0 8px 28px rgba(129,140,248,0.35);
+            box-shadow: 0 8px 28px rgba(92, 64, 51, 0.35);
+            background: var(--gold);
+            color: var(--espresso);
         }
         .btn-login:active { transform: translateY(0); }
 
-        /* ── DIVIDER ── */
+        /* DIVIDER */
         .divider {
             display: flex;
             align-items: center;
             gap: .75rem;
             margin: .5rem 0;
-            color: #334155;
+            color: var(--taupe);
             font-size: .78rem;
         }
         .divider::before,
@@ -213,29 +228,29 @@
             content: '';
             flex: 1;
             height: 1px;
-            background: rgba(255,255,255,0.06);
+            background: var(--sand);
         }
 
-        /* ── FOOTER ── */
+        /* FOOTER */
         .card-footer {
             text-align: center;
             margin-top: 1.6rem;
-            color: #64748b;
+            color: var(--taupe);
             font-size: .85rem;
         }
         .card-footer a {
-            color: #818cf8;
+            color: var(--gold);
             text-decoration: none;
             font-weight: 600;
             transition: color .2s;
         }
-        .card-footer a:hover { color: #c084fc; }
+        .card-footer a:hover { color: var(--espresso); }
 
-        /* ── BACK LINK ── */
+        /* BACK LINK */
         .back-link {
             z-index: 1;
             margin-top: 1.8rem;
-            color: #475569;
+            color: var(--taupe);
             font-size: .83rem;
             text-decoration: none;
             display: flex;
@@ -243,13 +258,13 @@
             gap: .4rem;
             transition: color .2s;
         }
-        .back-link:hover { color: #94a3b8; }
+        .back-link:hover { color: var(--espresso); }
     </style>
 </head>
 <body>
 
     <!-- BRAND -->
-    <a class="brand" href="/">✦ ShopLux</a>
+    <a class="brand" href="/">Lalla <em>Délices</em></a>
 
     <!-- CARD -->
     <div class="login-card">
@@ -326,3 +341,4 @@
 
 </body>
 </html>
+
