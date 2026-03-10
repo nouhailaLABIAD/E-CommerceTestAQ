@@ -15,8 +15,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CustomUserDetailsServiceTest {
-
-    @Mock
+    //@Mock : ça crée une fausse version de UserRepository.
+    //On ne touche pas la vraie base de données.
+    //On va “simuler” ce que renverra userRepository.findByEmail(...).
+    //userDetailsService : c’est le service qu’on veut tester. Il dépend du UserRepository.
+    @Mock 
     private UserRepository userRepository;
 
     private CustomUserDetailsService userDetailsService;
