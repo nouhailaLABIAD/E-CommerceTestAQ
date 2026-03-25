@@ -112,7 +112,12 @@
                     <span th:text="${#numbers.formatDecimal(total, 1, 2)}">0.00</span> DH
                 </span>
             </div>
-            <button class="checkout-btn">Passer la commande</button>
+
+            <!-- ✅ BOUTON COMMANDER → poste vers /orders/create -->
+            <form th:action="@{/orders/create}" method="post">
+                <button type="submit" class="checkout-btn">Passer la commande</button>
+            </form>
+
             <form th:action="@{/cart/clear}" method="post">
                 <button type="submit" class="clear-cart-btn">Vider le panier</button>
             </form>

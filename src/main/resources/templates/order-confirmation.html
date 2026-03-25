@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Confirmation de commande - Lalla Délices</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/lalla-delices.css}"/>
+    <style>
+        /* ── Confirmation page ── */
+        .confirmation-main {
+            max-width: 760px;
+            margin: 6rem auto 4rem;
+            padding: 0 1.5rem;
+        }
+        .success-banner {
+            background: #f0faf4;
+            border: 1px solid #b2dfce;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .success-banner .check-icon {
+            font-size: 3rem;
+            margin-bottom: .5rem;
+        }
+        .success-banner h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: #2d6a4f;
+            margin-bottom: .4rem;
+        }
+        .success-banner p { color: #555; }
+
+        /* ── Récapitulatif ── */
+        .order-card {
+            background: #fff;
+            border: 1px solid #e8e0d6;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .order-card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            border-bottom: 1px solid #f0e8df;
+            padding-bottom: .7rem;
+            margin-bottom: 1.2rem;
+        }
+        .order-meta { color: #666; margin-bottom: 1rem; font-size: .9rem; }
+        .order-meta span { font-weight: 500; color: #222; }
+
+        .order-items-table { width: 100%; border-collapse: collapse; }
+        .order-items-table th,
+        .order-items-table td {
+            padding: .7rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #f5f0eb;
+            font-size: .92rem;
+        }
+        .order-items-table th { color: #888; font-weight: 400; }
+
+        .order-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-top: 1px solid #e8e0d6;
+            margin-top: 1rem;
+        }
+
+        /* ── Paiement stub ── */
+        .payment-card {
+            background: #fff;
+            border: 1px solid #e8e0d6;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .payment-card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            border-bottom: 1px solid #f0e8df;
+            padding-bottom: .7rem;
+            margin-bottom: 1.5rem;
+        }
+        .payment-methods {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .payment-method-btn {
+            flex: 1;
+            min-width: 140px;
+            padding: 1rem;
+            border: 2px solid #e8e0d6;
+            border-radius: 10px;
+            background: #faf7f4;
+            cursor: pointer;
+            text-align: center;
+            font-family: 'Jost', sans-serif;
+            font-size: .9rem;
+            transition: border-color .2s, background .2s;
+        }
+        .payment-method-btn:hover,
+        .payment-method-btn.selected {
+            border-color: #c8a882;
+            background: #fff8f2;
+        }
+        .payment-method-btn .pm-icon { font-size: 1.8rem; display: block; margin-bottom: .3rem; }
+
+        .payment-notice {
+            background: #fef9f0;
+            border: 1px solid #f5e0b0;
+            border-radius: 8px;
+            padding: 1rem 1.2rem;
+            font-size: .88rem;
+            color: #7a5c1e;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+
+        /* ── Actions ── */
+        .confirmation-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .btn-primary-gold {
+            background: linear-gradient(135deg, #c8a882, #a0784e);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: .85rem 2rem;
+            font-family: 'Jost', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity .2s;
+        }
+        .btn-primary-gold:hover { opacity: .88; }
+        .btn-outline-gold {
+            background: transparent;
+            color: #a0784e;
+            border: 2px solid #c8a882;
+            border-radius: 8px;
+            padding: .85rem 2rem;
+            font-family: 'Jost', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background .2s;
+        }
+        .btn-outline-gold:hover { background: #fdf5ec; }
+
+        .status-badge {
+            display: inline-block;
+            padding: .25rem .75rem;
+            border-radius: 20px;
+            font-size: .8rem;
+            font-weight: 500;
+        }
+        .status-en-cours  { background: #fff3cd; color: #856404; }
+        .status-validee   { background: #d1e7dd; color: #0a3622; }
+        .status-annulee   { background: #f8d7da; color: #58151c; }
+    </style>
+</head>
+<body>
+
+<!-- ─── HEADER ──────────────────────────────────────────────── -->
+<header class="header-sticky">
+    <a href="/client/homePatisserie" class="logo">Lalla <em>Délices</em></a>
+    <nav class="nav-premium">
+        <ul>
+            <li><a href="/client/homePatisserie">Accueil</a></li>
+            <li><a href="/client/products">Collection</a></li>
+            <li><a href="/cart">🛒</a></li>
+            <li>
+                <form th:action="@{/logout}" method="post" style="display:inline;">
+                    <button type="submit" class="logout-btn">Déconnexion</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+<!-- ─── MAIN ─────────────────────────────────────────────────── -->
+<main class="confirmation-main">
+
+    <!-- Bannière succès -->
+    <div class="success-banner">
+        <div class="check-icon">✅</div>
+        <h1>Commande créée avec succès !</h1>
+        <p>Merci <strong th:text="${user.email}">Client</strong> — votre commande a bien été enregistrée.</p>
+    </div>
+
+    <!-- Récapitulatif commande -->
+    <div class="order-card">
+        <h2>📋 Récapitulatif de la commande</h2>
+
+        <p class="order-meta">
+            Numéro de commande : <span th:text="'#' + ${order.id}">—</span> &nbsp;|&nbsp;
+            Statut :
+            <span class="status-badge status-en-cours"
+                  th:classappend="${order.status.name() == 'EN_COURS'  ? 'status-en-cours'  :
+                                   order.status.name() == 'VALIDEE'   ? 'status-validee'   :
+                                   'status-annulee'}"
+                  th:text="${order.status}">EN_COURS</span>
+        </p>
+
+        <table class="order-items-table">
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Qté</th>
+                    <th>Prix unitaire</th>
+                    <th>Sous-total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${order.items}">
+                    <td th:text="${item.product.nom}">—</td>
+                    <td th:text="${item.quantity}">1</td>
+                    <td>
+                        <span th:text="${#numbers.formatDecimal(item.product.prix, 1, 2)}">0.00</span> DH
+                    </td>
+                    <td>
+                        <span th:text="${#numbers.formatDecimal(item.product.prix * item.quantity, 1, 2)}">0.00</span> DH
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="order-total-row">
+            <span>Total à payer</span>
+            <span><span th:text="${#numbers.formatDecimal(total, 1, 2)}">0.00</span> DH</span>
+        </div>
+    </div>
+
+    <!-- Section paiement (stub – à brancher sur votre passerelle) -->
+    <div class="payment-card">
+        <h2>💳 Paiement</h2>
+
+        <p style="color:#666; margin-bottom:1.2rem; font-size:.92rem;">
+            Choisissez votre mode de paiement pour finaliser votre commande.
+        </p>
+
+        <div class="payment-methods">
+            <button class="payment-method-btn selected" onclick="selectPayment(this)">
+                <span class="pm-icon">💳</span>
+                Carte bancaire
+            </button>
+            <button class="payment-method-btn" onclick="selectPayment(this)">
+                <span class="pm-icon">📱</span>
+                Paiement mobile
+            </button>
+            <button class="payment-method-btn" onclick="selectPayment(this)">
+                <span class="pm-icon">🏠</span>
+                Paiement à la livraison
+            </button>
+        </div>
+
+        <div class="payment-notice">
+            ℹ️ &nbsp;L'intégration de la passerelle de paiement (ex. CMI, Stripe) sera branchée ici.
+            Pour l'instant, choisissez <em>Paiement à la livraison</em> pour valider votre commande.
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="confirmation-actions">
+        <a href="/client/products" class="btn-outline-gold">Continuer mes achats</a>
+        <a href="/orders/history" class="btn-primary-gold">Voir mes commandes</a>
+    </div>
+
+</main>
+
+<!-- ─── FOOTER ─────────────────────────────────────────────── -->
+<footer class="footer-simple">
+    <div class="logo">Lalla <em>Délices</em></div>
+    <p>Téléphone : +212 5XX-XXXXXX | Marrakech, Maroc</p>
+    <p>&copy; 2024 Lalla Délices — Tous droits réservés</p>
+</footer>
+
+<script>
+    function selectPayment(btn) {
+        document.querySelectorAll('.payment-method-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+    }
+</script>
+
+</body>
+</html>

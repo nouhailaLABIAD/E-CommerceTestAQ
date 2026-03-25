@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Mes commandes - Lalla Délices</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/lalla-delices.css}"/>
+    <style>
+        .history-main { max-width: 900px; margin: 6rem auto 4rem; padding: 0 1.5rem; }
+        .page-title-cart { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:2rem; }
+
+        .order-block {
+            background:#fff;
+            border:1px solid #e8e0d6;
+            border-radius:12px;
+            margin-bottom:1.5rem;
+            overflow:hidden;
+        }
+        .order-block-header {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:1rem 1.5rem;
+            background:#faf7f4;
+            border-bottom:1px solid #f0e8df;
+            flex-wrap:wrap;
+            gap:.5rem;
+        }
+        .order-block-header .order-num {
+            font-family:'Playfair Display',serif;
+            font-size:1rem;
+        }
+        .status-badge {
+            display:inline-block;
+            padding:.25rem .75rem;
+            border-radius:20px;
+            font-size:.8rem;
+            font-weight:500;
+        }
+        .status-EN_COURS  { background:#fff3cd; color:#856404; }
+        .status-VALIDEE   { background:#d1e7dd; color:#0a3622; }
+        .status-ANNULEE   { background:#f8d7da; color:#58151c; }
+
+        .order-items-list { padding:1rem 1.5rem; }
+        .order-item-line {
+            display:flex;
+            justify-content:space-between;
+            padding:.4rem 0;
+            border-bottom:1px solid #f5f0eb;
+            font-size:.9rem;
+            color:#555;
+        }
+        .order-item-line:last-child { border-bottom:none; }
+
+        .order-block-footer {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:.8rem 1.5rem;
+            background:#faf7f4;
+            border-top:1px solid #f0e8df;
+            flex-wrap:wrap;
+            gap:.5rem;
+        }
+        .order-total-label { font-weight:600; }
+
+        .btn-cancel {
+            background:transparent;
+            color:#c0392b;
+            border:1px solid #e57373;
+            border-radius:6px;
+            padding:.4rem 1rem;
+            font-family:'Jost',sans-serif;
+            font-size:.85rem;
+            cursor:pointer;
+            transition:background .2s;
+        }
+        .btn-cancel:hover { background:#fdf0f0; }
+
+        .empty-history { text-align:center; padding:4rem 0; color:#888; }
+        .empty-history .icon { font-size:3rem; margin-bottom:1rem; }
+
+        .alert-success {
+            background:#d1e7dd; color:#0a3622;
+            padding:.8rem 1.2rem; border-radius:8px;
+            margin-bottom:1.2rem;
+        }
+        .alert-error {
+            background:#f8d7da; color:#58151c;
+            padding:.8rem 1.2rem; border-radius:8px;
+            margin-bottom:1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ─── HEADER ──────────────────────────────────────────────── -->
+<header class="header-sticky">
+    <a href="/client/homePatisserie" class="logo">Lalla <em>Délices</em></a>
+    <nav class="nav-premium">
+        <ul>
+            <li><a href="/client/homePatisserie">Accueil</a></li>
+            <li><a href="/client/products">Collection</a></li>
+            <li><a href="/cart">🛒</a></li>
+            <li>
+                <form th:action="@{/logout}" method="post" style="display:inline;">
+                    <button type="submit" class="logout-btn">Déconnexion</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+<!-- ─── MAIN ─────────────────────────────────────────────────── -->
+<main class="history-main">
+    <h1 class="page-title-cart">Mes commandes</h1>
+
+    <div th:if="${success}" class="alert-success" th:text="${success}"></div>
+    <div th:if="${error}"   class="alert-error"   th:text="${error}"></div>
+
+    <!-- Aucune commande -->
+    <div th:if="${orders == null or orders.empty}" class="empty-history">
+        <div class="icon">📦</div>
+        <p>Vous n'avez pas encore passé de commande.</p>
+        <a href="/client/products" style="color:#a0784e;">Découvrir nos créations →</a>
+    </div>
+
+    <!-- Liste des commandes -->
+    <div th:each="order : ${orders}" class="order-block">
+        <div class="order-block-header">
+            <span class="order-num">Commande <strong th:text="'#' + ${order.id}">—</strong></span>
+            <span class="status-badge"
+                  th:classappend="'status-' + ${order.status.name()}"
+                  th:text="${order.status}">—</span>
+        </div>
+
+        <div class="order-items-list">
+            <div class="order-item-line" th:each="item : ${order.items}">
+                <span th:text="${item.product.nom} + ' × ' + ${item.quantity}">—</span>
+                <span th:text="${#numbers.formatDecimal(item.product.prix * item.quantity, 1, 2)} + ' DH'">—</span>
+            </div>
+        </div>
+
+        <div class="order-block-footer">
+            <span class="order-total-label">
+                Total :
+                <span th:with="total=${#aggregates.sum(order.items.![product.prix * quantity])}"
+                      th:text="${#numbers.formatDecimal(total, 1, 2)}">0.00</span> DH
+            </span>
+
+            <!-- Annulation disponible uniquement si EN_COURS -->
+            <form th:if="${order.status.name() == 'EN_COURS'}"
+                  th:action="@{/orders/{id}/cancel(id=${order.id})}"
+                  method="post"
+                  onsubmit="return confirm('Confirmer l\'annulation de cette commande ?')">
+                <button type="submit" class="btn-cancel">Annuler la commande</button>
+            </form>
+        </div>
+    </div>
+
+</main>
+
+<!-- ─── FOOTER ─────────────────────────────────────────────── -->
+<footer class="footer-simple">
+    <div class="logo">Lalla <em>Délices</em></div>
+    <p>Téléphone : +212 5XX-XXXXXX | Marrakech, Maroc</p>
+    <p>&copy; 2024 Lalla Délices — Tous droits réservés</p>
+</footer>
+
+</body>
+</html>
