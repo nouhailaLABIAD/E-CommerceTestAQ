@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="'Statut commande #'+${order.id}">Statut commande</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/lalla-delices.css}"/>
+</head>
+<body class="admin-layout">
+
+<aside class="sidebar">
+    <a class="brand" href="/admin">Lalla <em>Délices</em></a>
+    <a href="/admin/homeAdmin">🏠 Dashboard</a>
+    <a href="/admin/orders" class="active">📋 Commandes</a>
+    <div class="logout"><a href="/logout">🚪 Déconnexion</a></div>
+</aside>
+
+<main class="admin-main">
+    <div class="page-header">
+        <a href="@{/admin/orders/{id}(id=${order.id})}" class="back-btn">←</a>
+        <h2 th:text="'Statut - Commande #' + ${order.id}">Modifier statut</h2>
+    </div>
+
+    <div class="form-card" style="max-width: 500px;">
+        <form th:action="@{/admin/orders/status/{id}(id=${order.id})}" method="post">
+            <div class="form-group full">
+                <label>Client</label>
+                <p class="form-readonly" th:text="${order.user.email}">client@example.com</p>
+            </div>
+            
+            <div class="form-group full">
+                <label>Statut actuel</label>
+                <p class="form-readonly"><span class="status-badge" th:classappend="${order.status?.name() == 'EN_COURS' ? 'pending' : (order.status?.name() == 'VALIDEE' ? 'active' : 'cancelled')}" th:text="${order.status}">En cours</span></p>
+            </div>
+            <div class="form-group full">
+                <label for="status">Nouveau statut <span class="required">*</span></label>
+                    <select id="status" name="status" required>
+                        <option value="EN_COURS" th:selected="${order.status?.name() == 'EN_COURS'}">⏳ En cours</option>
+                        <option value="VALIDEE" th:selected="${order.status?.name() == 'VALIDEE'}">✅ Validée</option>
+                        <option value="ANNULEE" th:selected="${order.status?.name() == 'ANNULEE'}">❌ Annulée</option>
+                    </select>
+                </div>
+
+            <div class="form-actions">
+                <a th:href="@{/admin/orders/{id}(id=${order.id})}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">💾 Mettre à jour</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+</body>
+</html>

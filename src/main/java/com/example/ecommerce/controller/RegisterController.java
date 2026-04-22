@@ -19,6 +19,15 @@ public class RegisterController {
         this.passwordEncoder = passwordEncoder;
     }
 
+    private boolean validatePassword(String password) {
+        if (password == null || password.length() < 6) {
+            return false;
+        }
+        boolean hasUpper = password.matches(".*[A-Z].*");
+        boolean hasSpecial = password.matches(".*[!@#$%^&*(),.?\":{}|<>].*");
+        return hasUpper && hasSpecial;
+    }
+
     @GetMapping("/register")
     public String registerPage(Model model) {
         model.addAttribute("user", new User());
@@ -27,6 +36,12 @@ public class RegisterController {
 
     @PostMapping("/register")
     public String registerUser(@ModelAttribute("user") User user, Model model) {
+        // Vérifier le mot de passe
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty() || !validatePassword(user.getPassword())) {
+            model.addAttribute("errorPassword", "Le mot de passe doit faire au moins 6 caractères, contenir au moins une majuscule et un caractère spécial (!@#$%^&*(),.?\":{}|<>)");
+            return "register";
+        }
+
         // Vérifier si l'email existe déjà
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             model.addAttribute("errorEmail", "Cet email est déjà utilisé.");

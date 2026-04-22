@@ -1,14 +1,12 @@
-# TODO: Increase Code Coverage for SonarQube
+# SonarQube Analysis - Fix Tests for Analysis
 
-Current coverage: ~14%
+## Steps to Complete:
+- [x] 1. Update SQL test data files to use correct plural table names (users.sql, categories.sql, products.sql)
+- [ ] 2. Run `mvn clean verify` to confirm all tests pass [Partial: SQL fixed, other test issues remain]
+- [ ] 3. Start SonarQube server (Docker command provided)
+- [ ] 4. Run `mvn sonar:sonar` with server/token params
+- [ ] 5. View project dashboard at http://localhost:9000
+- [ ] 6. Complete SonarQube task
 
-## Steps:
-- [x] 1. Uncomment CartServiceTest.java ✅ (CartService now covered)
-- [x] 2. Create OrderServiceImplTest.java ✅ (OrderService covered)
-- [x] 3. Create CategoryServiceImplTest.java ✅ (CategoryService covered)
-- [x] 4. Create OrderControllerTest.java ✅ (MVC coverage for orders)
-- [x] 5. Verify coverage with `mvn clean test jacoco:report` (running, new report upcoming)
-- [ ] 6. Update SonarQube with `mvn sonar:sonar`
-- [ ] 7. Iterate on remaining gaps
+Progress will be updated after each step.
 
-Target: 40-50%+ coverage

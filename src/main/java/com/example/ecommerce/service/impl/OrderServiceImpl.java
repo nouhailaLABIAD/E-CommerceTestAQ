@@ -103,7 +103,7 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.save(order);
     }
 
-    @Override
+@Override
     public Order cancelOrder(Long orderId) {
         Order order = getOrderById(orderId);
 
@@ -120,5 +120,57 @@ public class OrderServiceImpl implements OrderService {
 
         order.setStatus(OrderStatus.ANNULEE);
         return orderRepository.save(order);
+    }
+
+    // ── ADMIN IMPLEMENTATIONS ─────────────────────────────────────────────────
+
+    @Override
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
+    @Override
+    public Order getAdminOrderById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Commande introuvable : " + orderId));
+    }
+
+    @Override
+    public List<Order> searchOrdersByUserEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return getAllOrders();
+        }
+        return orderRepository.findByUserEmailContainingIgnoreCase(email.trim());
+    }
+
+    @Override
+    public void deleteOrder(Long orderId) {
+        Order order = getAdminOrderById(orderId);
+        // Soft delete: same as cancelOrder logic
+        if (order.getStatus() == OrderStatus.ANNULEE) {
+            return; // already deleted
+        }
+        // Restore stock (if applicable)
+        for (OrderItem item : order.getItems()) {
+            Product product = item.getProduct();
+            product.setStock(product.getStock() + item.getQuantity());
+            productRepository.save(product);
+        }
+        order.setStatus(OrderStatus.ANNULEE);
+        orderRepository.save(order);
+    }
+
+    @Override
+    public Order updateStatus(Long orderId, OrderStatus status) {
+        Order order = getAdminOrderById(orderId);
+        order.setStatus(status);
+        return orderRepository.save(order);
+    }
+
+    @Override
+    public double calculateOrderTotal(Order order) {
+        return order.getItems().stream()
+                .mapToDouble(item -> item.getQuantity() * item.getProduct().getPrix())
+                .sum();
     }
 }

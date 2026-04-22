@@ -41,5 +41,37 @@ public interface OrderService {
      * Annuler une commande (si pas encore traitée)
      */
     Order cancelOrder(Long orderId);
+
+    // ── ADMIN METHODS ────────────────────────────────────────────────────────
+    
+    /**
+     * Obtenir toutes les commandes (admin)
+     */
+    List<Order> getAllOrders();
+    
+    /**
+     * Obtenir une commande par ID (admin - sans check user)
+     */
+    Order getAdminOrderById(Long orderId);
+    
+    /**
+     * Rechercher commandes par email utilisateur
+     */
+    List<Order> searchOrdersByUserEmail(String email);
+    
+    /**
+     * Supprimer une commande (soft delete - set ANNULEE + restore stock)
+     */
+    void deleteOrder(Long orderId);
+    
+    /**
+     * Mettre à jour statut (admin)
+     */
+    Order updateStatus(Long orderId, OrderStatus status);
+    
+    /**
+     * Calculer total commande
+     */
+    double calculateOrderTotal(Order order);
 }
 

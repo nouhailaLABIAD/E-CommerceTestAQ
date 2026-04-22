@@ -21,6 +21,9 @@
         <div class="alert alert-error" th:if="${errorEmail}">
             <span>⚠️</span><span th:text="${errorEmail}">Erreur</span>
         </div>
+        <div class="alert alert-error" th:if="${errorPassword}" style="margin-top: 0.5rem;">
+            <span>⚠️</span><span th:text="${errorPassword}">Erreur mot de passe</span>
+        </div>
 
         <form th:action="@{/register}" th:object="${user}" method="post"
               style="display:flex;flex-direction:column;gap:1.2rem;">
@@ -33,12 +36,62 @@
                 <input type="email" id="email" th:field="*{email}" placeholder="exemple@email.com" required/>
             </div>
             <div class="form-group">
-                <label for="password">Mot de passe</label>
+                <label for="password">Mot de passe <small>(min 6 chars, 1 majuscule, 1 spécial)</small></label>
                 <input type="password" id="password" th:field="*{password}" placeholder="Votre mot de passe" required/>
+                <div id="password-feedback" class="feedback" style="font-size: 0.85em; margin-top: 0.3rem; min-height: 1.2em;"></div>
             </div>
-            <button type="submit" class="btn btn-primary btn-full" style="margin-top:.4rem;">
+            <button type="submit" id="submit-btn" class="btn btn-primary btn-full" style="margin-top:.4rem;" disabled>
                 S'inscrire →
             </button>
+
+            <script>
+                const passwordInput = document.getElementById('password');
+                const feedback = document.getElementById('password-feedback');
+                const submitBtn = document.getElementById('submit-btn');
+
+                function updatePasswordFeedback() {
+                    const pass = passwordInput.value;
+                    feedback.innerHTML = '';
+                    feedback.className = 'feedback';
+
+                    if (!pass) {
+                        feedback.textContent = 'Entrez un mot de passe';
+                        feedback.classList.add('error');
+                        submitBtn.disabled = true;
+                        return;
+                    }
+
+                    if (pass.length < 6) {
+                        feedback.innerHTML = '❌ Min 6 caractères';
+                        feedback.classList.add('error');
+                        submitBtn.disabled = true;
+                        return;
+                    }
+
+                    const hasUpper = /[A-Z]/.test(pass);
+                    if (!hasUpper) {
+                        feedback.innerHTML = '❌ Au moins 1 majuscule';
+                        feedback.classList.add('error');
+                        submitBtn.disabled = true;
+                        return;
+                    }
+
+                    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pass);
+                    if (!hasSpecial) {
+                        feedback.innerHTML = '❌ Au moins 1 spécial (!@#$%^&*(),.?":{}|<> )';
+                        feedback.classList.add('error');
+                        submitBtn.disabled = true;
+                        return;
+                    }
+
+                    feedback.innerHTML = '✅ Mot de passe valide';
+                    feedback.classList.add('success');
+                    submitBtn.disabled = false;
+                }
+
+                passwordInput.addEventListener('input', updatePasswordFeedback);
+                updatePasswordFeedback(); // initial
+            </script>
         </form>
 
         <div class="auth-footer" style="margin-top:1.5rem;">

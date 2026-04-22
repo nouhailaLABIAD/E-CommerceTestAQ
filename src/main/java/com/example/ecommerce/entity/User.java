@@ -1,6 +1,9 @@
 package com.example.ecommerce.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.util.Set;
 
 @Entity
@@ -16,6 +19,9 @@ public class User {
     @Column(unique = true)
     private String email;
 
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
+    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?\":{}|<>]).{6,}$", message = "Password must contain at least one uppercase letter and one special character")
     private String password;
 
     @Enumerated(EnumType.STRING)

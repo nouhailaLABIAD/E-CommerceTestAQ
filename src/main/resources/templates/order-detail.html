@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="'Commande #'+${order.id} + ' - Lalla Délices Admin'">Commande - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/lalla-delices.css}"/>
+</head>
+<body class="admin-layout">
+
+<aside class="sidebar">
+    <a class="brand" href="/admin">Lalla <em>Délices</em></a>
+    <span class="sidebar-label">Principal</span>
+    <a href="/admin/homeAdmin">🏠 Dashboard</a>
+    <a href="/admin/products">📦 Produits</a>
+    <a href="/admin/categories">🏷 Catégories</a>
+    <a href="/admin/orders" class="active">📋 Commandes</a>
+    <span class="sidebar-label">Compte</span>
+    <a href="/admin/settings">⚙️ Paramètres</a>
+    <div class="logout"><a href="/logout">🚪 Déconnexion</a></div>
+</aside>
+
+<main class="admin-main">
+    <div class="page-header">
+        <a href="/admin/orders" class="back-btn">←</a>
+        <h2 th:text="'Commande #' + ${order.id}">Commande #123</h2>
+    </div>
+
+    <div class="section-card">
+        <h3>📋 Détails commande</h3>
+        <div class="order-header">
+            <div class="order-info">
+                <div><strong>ID :</strong> <span th:text="${order.id}">#123</span></div>
+        <div><strong>Date :</strong> <span th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 14:30</span></div>
+                <div><strong>Client :</strong> <span th:text="${order.user.email}">client@example.com</span></div>
+            </div>
+            <div class="order-status">
+                <span class="status-badge large" th:classappend="${order.status.name() == 'EN_COURS' ? 'pending' : 
+                    (order.status.name() == 'VALIDEE' ? 'active' : 'cancelled')}">
+                    <span th:text="${order.status}">En cours</span>
+                </span>
+                <a th:href="@{/admin/orders/status/{id}(id=${order.id})}" class="btn btn-sm btn-secondary">✏️ Modifier statut</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <h3>🛍 Articles commandés (<span th:text="${#lists.size(order.items)}">3</span>)</h3>
+        <div class="table-card">
+            <table>
+                <thead><tr><th>Produit</th><th>Quantité</th><th>Prix unitaire</th><th>Sous-total</th></tr></thead>
+                <tbody>
+                    <tr th:each="item : ${order.items}">
+                        <td>
+                            <div class="item-cell">
+                                <div class="item-thumb">
+                                    <img th:src="${item.product.imageUrl}" th:alt="${item.product.nom}"/>
+                                </div>
+                                <span class="item-name" th:text="${item.product.nom}">Produit</span>
+                            </div>
+                        </td>
+                        <td><strong th:text="${item.quantity}">2</strong></td>
+                        <td><span class="price-cell"><span th:text="${item.product.prix}">12.50</span> €</span></td>
+                        <td><span class="price-cell"><span th:text="${#numbers.formatDecimal(item.quantity * item.product.prix, 1, 2)}">25.00</span> €</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="order-total">
+            <div class="total-line">
+                <span>Total :</span>
+                <strong><span th:text="${#numbers.formatDecimal(orderService.calculateOrderTotal(order), 1, 2)}">75.50</span> €</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions" style="justify-content: flex-end; margin-top: 2rem;">
+        <a th:href="@{/admin/orders/delete/{id}(id=${order.id})}" class="btn btn-danger" onclick="return confirm('Supprimer définitivement ?')">🗑 Supprimer</a>
+        <a href="/admin/orders" class="btn btn-secondary">← Retour</a>
+    </div>
+</main>
+
+</body>
+</html>

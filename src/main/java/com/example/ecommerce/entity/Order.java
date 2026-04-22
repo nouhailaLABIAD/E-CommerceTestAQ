@@ -1,6 +1,8 @@
 package com.example.ecommerce.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
 import java.util.Set;
 
 @Entity
@@ -17,12 +19,18 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private Set<OrderItem> items;
 
-    @Enumerated(EnumType.STRING)
+@Enumerated(EnumType.STRING)
     private OrderStatus status;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 
     // Getters & Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
