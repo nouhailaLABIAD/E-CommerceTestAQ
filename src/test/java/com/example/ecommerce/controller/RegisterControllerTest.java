@@ -58,10 +58,46 @@ class RegisterControllerTest {
     }
 
     @Test
-    void registerUser_invalidPassword_returnsError() throws Exception {
+    void registerUser_nullPassword_returnsError() throws Exception {
+        mockMvc.perform(post("/register")
+                        .param("email", "new@test.com")
+                        .param("password", "")
+                        .param("nom", "Test User")
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("register"))
+                .andExpect(model().attributeExists("errorPassword"));
+    }
+
+    @Test
+    void registerUser_shortPassword_returnsError() throws Exception {
         mockMvc.perform(post("/register")
                         .param("email", "new@test.com")
                         .param("password", "weak")
+                        .param("nom", "Test User")
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("register"))
+                .andExpect(model().attributeExists("errorPassword"));
+    }
+
+    @Test
+    void registerUser_passwordNoUppercase_returnsError() throws Exception {
+        mockMvc.perform(post("/register")
+                        .param("email", "new@test.com")
+                        .param("password", "password123!")
+                        .param("nom", "Test User")
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("register"))
+                .andExpect(model().attributeExists("errorPassword"));
+    }
+
+    @Test
+    void registerUser_passwordNoSpecial_returnsError() throws Exception {
+        mockMvc.perform(post("/register")
+                        .param("email", "new@test.com")
+                        .param("password", "Password123")
                         .param("nom", "Test User")
                         .with(csrf()))
                 .andExpect(status().isOk())

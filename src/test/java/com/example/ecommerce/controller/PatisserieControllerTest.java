@@ -41,6 +41,16 @@ class PatisserieControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "unknown@test.com", roles = "CLIENT")
+    void homePatisserie_authenticatedUserNotFound_returnsView() throws Exception {
+        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/patisserie"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("homePatisserie"));
+    }
+
+    @Test
     @WithAnonymousUser
     void homePatisserie_anonymous_returnsView() throws Exception {
         mockMvc.perform(get("/patisserie"))

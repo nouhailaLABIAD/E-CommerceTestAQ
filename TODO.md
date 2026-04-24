@@ -1,59 +1,23 @@
-# TODO - Passage Quality Gate SonarQube ✅
+# Plan Augmentation Couverture de Tests
 
-## Objectif
-Passer le Quality Gate SonarQube : couverture ≥80%, code smells <5, hotspots sécurité revus.
+## Objectif : Passer de 83% à >95% (instructions) et 56% à >80% (branches)
 
----
+## État actuel (baseline)
+- **Instructions** : 83% (394 missed / 2329 total)
+- **Branches** : 56% (94 missed / 218 total)
+- **Tests** : 137 passent, 0 échecs
 
-## Phase 1 : Hotspots de sécurité ✅
-- [x] Analyser les hotspots de sécurité → `SECURITY_HOTSPOT_REVIEW.md`
-- [x] Corriger SecurityConfig.java (CSRF commenté REVIEW, FrameOptions sameOrigin)
-- [x] Corriger AdminSeeder.java (password externalisé via @Value)
-- [x] Corriger FileStorageService.java (path traversal normalize, whitelist extensions, SLF4J)
-- [x] Convertir injection @Autowired en constructeur (PatisserieController, OrderServiceImpl)
+## Étapes à réaliser
 
-## Phase 2 : Code Smells ✅
-- [x] Créer exceptions métier (OrderNotFoundException, EmptyCartException, InsufficientStockException, ProductNotFoundException, ProductUnavailableException, CategoryNotFoundException, BusinessException)
-- [x] Refactor OrderServiceImpl (extraction performSoftCancel, duplication cancelOrder/deleteOrder supprimée)
-- [x] Refactor CartServiceImpl, ProductServiceImpl, CategoryServiceImpl (RuntimeException → exceptions métier)
-- [x] Remplacer System.err.println par SLF4J Logger
-- [x] Externaliser upload.dir et admin.password dans application.properties
-- [x] Refactor GlobalExceptionHandler (logging SLF4J + handler BusinessException 400)
-- [x] Nettoyer code mort PatisserieController (addToCart → GetMapping)
-
-## Phase 3 : Tests unitaires (69% → 83%) ✅
-- [x] Ajouter tests ProductServiceImpl (6 tests) → `ProductServiceImplTest.java`
-- [x] Ajouter tests OrderServiceImpl méthodes admin (12 tests) → `OrderServiceImplAdminTest.java`
-- [x] Ajouter tests CartServiceImpl branches manquantes (13 tests) → `CartServiceImplTest.java`
-
-## Phase 4 : Vérification ✅
-- [x] `mvnw.cmd clean test` → BUILD SUCCESS (137 tests, 0 failures, 0 errors)
-- [x] JaCoCo report généré → couverture estimée ~83%
-- [ ] `mvnw.cmd clean verify sonar:sonar` (à exécuter côté utilisateur avec token SonarQube)
-
----
-
-## Livrables produits
-1. `SECURITY_HOTSPOT_REVIEW.md` — Rapport d'analyse et justification des hotspots
-2. `COVERAGE_REPORT.md` — Analyse avant/après avec plan de tests détaillé
-3. Nouvelles classes de test :
-   - `OrderServiceImplAdminTest.java` (12 tests)
-   - `ProductServiceImplTest.java` (6 tests)
-   - `CartServiceImplTest.java` (13 tests)
-4. Refactorings source avec patches intégrés :
-   - `SecurityConfig.java`
-   - `AdminSeeder.java`
-   - `FileStorageService.java`
-   - `OrderServiceImpl.java`
-   - `CartServiceImpl.java`
-   - `ProductServiceImpl.java`
-   - `CategoryServiceImpl.java`
-   - `GlobalExceptionHandler.java`
-   - `PatisserieController.java`
-   - `application.properties`
-
-## Commande de vérification finale
-```bash
-.\mvnw.cmd clean verify sonar:sonar -Dsonar.host.url=<URL> -Dsonar.token=<TOKEN>
-```
+- [x] **Étape 1** : FileStorageServiceTest — ajouter tests chemin succès, extensions, path traversal, IO exception
+- [x] **Étape 2** : CartServiceImplTest — ajouter tests cas positifs (création panier, new item, update qty positive, remove, clear, totaux)
+- [x] **Étape 3** : ProductServiceImplTest — ajouter getAllAvailableProducts, searchProducts, softDelete, updateStock, update complet
+- [x] **Étape 4** : AdminProductControllerTest — catégorie null (création + update), update avec nouvelle image
+- [x] **Étape 5** : CartControllerTest — exceptions dans add/update/remove/clear, update quantité positive
+- [x] **Étape 6** : OrderControllerTest — commande d'un autre utilisateur, exceptions
+- [x] **Étape 7** : CategoryControllerTest — création sans image, update avec nouvelle image
+- [x] **Étape 8** : ClientProductControllerTest — branches manquantes
+- [x] **Étape 9** : GlobalExceptionHandlerTest — test des deux handlers
+- [x] **Étape 10** : BusinessExceptionTest — constructeur avec cause
+- [ ] **Vérification finale** : mvnw clean test jacoco:report + vérification rapport
 

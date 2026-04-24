@@ -62,6 +62,46 @@ class CartServiceImplTest {
     }
 
     @Test
+    void getCartByUser_existingCart_returnsCart() {
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
+        Cart result = cartService.getCartByUser(testUser);
+        assertEquals(testCart, result);
+        verify(cartRepository, never()).save(any());
+    }
+
+    @Test
+    void getCartByUser_noCart_createsNewCart() {
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.empty());
+        when(cartRepository.save(any(Cart.class))).thenAnswer(inv -> {
+            Cart c = inv.getArgument(0);
+            c.setId(2L);
+            return c;
+        });
+
+        Cart result = cartService.getCartByUser(testUser);
+
+        assertNotNull(result);
+        assertEquals(testUser, result.getUser());
+        assertNotNull(result.getItems());
+        verify(cartRepository).save(any(Cart.class));
+    }
+
+    @Test
+    void addProduct_newItem_createsItem() {
+        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
+        when(cartItemRepository.findByCartAndProduct(testCart, testProduct)).thenReturn(Optional.empty());
+        when(cartItemRepository.save(any(CartItem.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        CartItem result = cartService.addProduct(testUser, 1L, 2);
+
+        assertNotNull(result);
+        assertEquals(2, result.getQuantity());
+        assertEquals(testProduct, result.getProduct());
+        assertEquals(testCart, result.getCart());
+    }
+
+    @Test
     void addProduct_existingItem_updatesQuantity() {
         CartItem existingItem = new CartItem();
         existingItem.setId(1L);
@@ -127,6 +167,26 @@ class CartServiceImplTest {
     }
 
     @Test
+    void updateQuantity_success() {
+        CartItem existingItem = new CartItem();
+        existingItem.setId(1L);
+        existingItem.setCart(testCart);
+        existingItem.setProduct(testProduct);
+        existingItem.setQuantity(1);
+        testCart.getItems().add(existingItem);
+
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
+        when(cartItemRepository.findByCartIdAndProductId(1L, 1L))
+                .thenReturn(Optional.of(existingItem));
+        when(cartItemRepository.save(any(CartItem.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        CartItem result = cartService.updateQuantity(testUser, 1L, 3);
+
+        assertNotNull(result);
+        assertEquals(3, result.getQuantity());
+    }
+
+    @Test
     void updateQuantity_insufficientStock_throws() {
         CartItem existingItem = new CartItem();
         existingItem.setId(1L);
@@ -141,6 +201,165 @@ class CartServiceImplTest {
 
         assertThrows(InsufficientStockException.class,
                 () -> cartService.updateQuantity(testUser, 1L, 20));
+    }
+
+    @Test
+    void updateQuantity_toZero_deletesItem() {
+        CartItem existingItem = new CartItem();
+        existingItem.setId(1L);
+        existingItem.setCart(testCart);
+        existingItem.setProduct(testProduct);
+        existingItem.setQuantity(1);
+        testCart.getItems().add(existingItem);
+
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
+        when(cartItemRepository.findByCartIdAndProductId(1L, 1L))
+                .thenReturn(Optional.of(existingItem));
+        doNothing().when(cartItemRepository).delete(existingItem);
+
+        CartItem result = cartService.updateQuantity(testUser, 1L, 0);
+
+        assertNull(result);
+        verify(cartItemRepository).delete(existingItem);
+    }
+
+    @Test
+    void removeProduct_success() {
+        CartItem existingItem = new CartItem();
+        existingItem.setId(1L);
+        existingItem.setCart(testCart);
+        existingItem.setProduct(testProduct);
+        testCart.getItems().add(existingItem);
+
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
+        when(cartItemRepository.findByCartIdAndProductId(1L, 1L))
+                .thenReturn(Optional.of(existingItem));
+        doNothing().when(cartItemRepository).delete(existingItem);
+
+        cartService.removeProduct(testUser, 1L);
+
+        verify(cartItemRepository).delete(existingItem);
+        assertFalse(testCart.getItems().contains(existingItem));
+    }
+
+    @Test
+    void removeProduct_itemNotFound_doesNothing() {
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
+        when(cartItemRepository.findByCartIdAndProductId(1L, 1L))
+                .thenReturn(Optional.empty());
+
+        cartService.removeProduct(testUser, 1L);
+
+        verify(cartItemRepository, never()).delete(any());
+    }
+
+    @Test
+    void clearCart_withItems_clearsAll() {
+        CartItem item1 = new CartItem();
+        CartItem item2 = new CartItem();
+        testCart.getItems().add(item1);
+        testCart.getItems().add(item2);
+
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
+        doNothing().when(cartItemRepository).deleteAll(any());
+        when(cartRepository.save(any(Cart.class))).thenReturn(testCart);
+
+        cartService.clearCart(testUser);
+
+        verify(cartItemRepository).deleteAll(any());
+        verify(cartRepository).save(testCart);
+        assertTrue(testCart.getItems().isEmpty());
+    }
+
+    @Test
+    void clearCart_emptyItems_doesNothing() {
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
+
+        cartService.clearCart(testUser);
+
+        verify(cartItemRepository, never()).deleteAll(any());
+        verify(cartRepository, never()).save(any());
+    }
+
+    @Test
+    void getCartTotal_withItems_returnsSum() {
+        Product p1 = new Product();
+        p1.setPrix(10.0);
+        Product p2 = new Product();
+        p2.setPrix(5.0);
+
+        CartItem item1 = new CartItem();
+        item1.setProduct(p1);
+        item1.setQuantity(2);
+        CartItem item2 = new CartItem();
+        item2.setProduct(p2);
+        item2.setQuantity(3);
+
+        testCart.getItems().add(item1);
+        testCart.getItems().add(item2);
+
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
+
+        double total = cartService.getCartTotal(testUser);
+
+        assertEquals(35.0, total, 0.01);
+    }
+
+    @Test
+    void getCartTotal_emptyItems_returnsZero() {
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
+
+        double total = cartService.getCartTotal(testUser);
+
+        assertEquals(0.0, total);
+    }
+
+    @Test
+    void getCartItemCount_withItems_returnsSum() {
+        CartItem item1 = new CartItem();
+        item1.setQuantity(2);
+        CartItem item2 = new CartItem();
+        item2.setQuantity(3);
+
+        testCart.getItems().add(item1);
+        testCart.getItems().add(item2);
+
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
+
+        int count = cartService.getCartItemCount(testUser);
+
+        assertEquals(5, count);
+    }
+
+    @Test
+    void clearCart_nullItems_doesNothing() {
+        testCart.setItems(null);
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
+
+        cartService.clearCart(testUser);
+
+        verify(cartItemRepository, never()).deleteAll(any());
+        verify(cartRepository, never()).save(any());
+    }
+
+    @Test
+    void getCartTotal_nullItems_returnsZero() {
+        testCart.setItems(null);
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
+
+        double total = cartService.getCartTotal(testUser);
+
+        assertEquals(0.0, total);
+    }
+
+    @Test
+    void getCartItemCount_nullItems_returnsZero() {
+        testCart.setItems(null);
+        when(cartRepository.findByUser(testUser)).thenReturn(Optional.of(testCart));
+
+        int count = cartService.getCartItemCount(testUser);
+
+        assertEquals(0, count);
     }
 
     @Test

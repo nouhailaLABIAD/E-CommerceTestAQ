@@ -11,39 +11,31 @@
 
 | Règle SonarQube | Fichier(s) concernés | Statut | Action |
 |---|---|---|---|
-| S4502 — CSRF désactivé | `SecurityConfig.java` | **Approuvé** | Justification documentée + commentaire `// REVIEW` |
+| S4502 — CSRF désactivé | `SecurityConfig.java` | **Corrigé** | Suppression de `.csrf(csrf -> csrf.disable())` — CSRF actif par défaut |
 | S5122 — FrameOptions permissif | `SecurityConfig.java` | **Corrigé** | `disable()` → `sameOrigin()` |
-| S2068 — Mot de passe en dur | `AdminSeeder.java` | **Corrigé** | Externalisation via `@Value` |
+| S2068 — Mot de passe en dur | `AdminSeeder.java`, `application.properties` | **Corrigé** | `@Value("${admin.password:}")` + garde `isBlank()` + variable d'env |
 | Path Traversal (upload) | `FileStorageService.java` | **Corrigé** | `Path.normalize()` + whitelist extensions |
 | S106 — `System.err.println` | `FileStorageService.java` | **Corrigé** | Remplacé par SLF4J `Logger` |
 | S112 — `RuntimeException` générique | Services métier | **Corrigé** | Exceptions métiers typées |
+| DOM XSS potentiel (`innerHTML`) | `register.html` | **Corrigé** | Remplacé par `textContent` |
 
 ---
 
 ## 1. S4502 — Désactivation de la protection CSRF (`SecurityConfig.java`)
 
-### Localisation
+### Localisation (avant correction)
 ```java
 .csrf(csrf -> csrf.disable())
 ```
 
-### Analyse
-SonarQube remonte un hotspot de sécurité car la protection CSRF est désactivée globalement.  
-Dans une application Spring Boot + Thymeleaf avec rendu côté serveur (SSR), les formulaires sont générés et soumis par le même domaine. L'architecture n'expose pas d'API REST stateless consommée par un frontend séparé.
+### Correction appliquée
+Suppression complète de la ligne. Spring Security active CSRF par défaut.
 
-### Décision : APPROUVÉ (Safe)
-**Justification :**
-- L'application utilise un modèle SSR (Thymeleaf) où toutes les requêtes POST/PUT/DELETE proviennent de formulaires servis par le même origin.
-- Les endpoints sensibles (`/admin/**`, `/client/**`, `/cart/**`) sont protégés par authentification Spring Security avec redirection basée sur les rôles.
-- La surface d'attaque CSRF est réduite : pas d'API REST publique, pas de CORS ouvert, pas de tokens JWT côté client.
-- **Mitigation supplémentaire** : les cookies de session utilisent `HttpOnly` (par défaut Spring Security) et le logout invalide la session.
-
-### Recommandation future
-Pour une hardening complet, envisager d'activer CSRF avec la prise en charge Thymeleaf :
-```java
-.csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-```
-Et utiliser `th:action` dans les templates (génère automatiquement le token `_csrf`).
+### Justification
+- L'application utilise des formulaires Thymeleaf avec `th:action` qui injecte automatiquement le token CSRF.
+- Tous les endpoints POST sensibles (`/cart/**`, `/orders/**`, `/admin/**`) sont protégés.
+- Les tests MockMvc utilisent déjà `.with(csrf())` là où nécessaire.
+- **Avantage :** Suppression du hotspot SonarQube sans revue manuelle UI.
 
 ---
 
@@ -60,32 +52,42 @@ Et utiliser `th:action` dans les templates (génère automatiquement le token `_
 ```
 
 ### Justification
-`disable()` supprimait entièrement la protection contre le clickjacking (embedding dans `<iframe>`).  
+`disable()` supprimait entièrement la protection contre le clickjacking.  
 `sameOrigin()` permet l'affichage en iframe uniquement depuis le même domaine (nécessaire pour la console H2 en développement), tout en bloquant les embeddings tiers malveillants.
 
 ---
 
-## 3. S2068 — Mot de passe administrateur en dur (`AdminSeeder.java`)
+## 3. S2068 — Mot de passe administrateur en dur (`AdminSeeder.java` + `application.properties`)
 
 ### Localisation (avant correction)
 ```java
-admin.setPassword(passwordEncoder.encode("admin123"));
+// AdminSeeder.java
+@Value("${admin.password:admin123}")
+private String adminPassword;
+
+// application.properties
+admin.password=admin123
 ```
 
 ### Correction appliquée
 ```java
-@Value("${admin.password:admin123}")
+// AdminSeeder.java
+@Value("${admin.password:}")
 private String adminPassword;
-// ...
-admin.setPassword(passwordEncoder.encode(adminPassword));
+
+// dans run()
+if (adminPassword == null || adminPassword.isBlank()) {
+    return;
+}
+
+// application.properties
+admin.password=${ADMIN_PASSWORD:}
 ```
 
 ### Justification
-Le mot de passe était hardcodé dans le code source, visible dans le repo Git et dans les artefacts compilés.  
-L'externalisation via `application.properties` permet :
-- De changer le mot de passe sans recompiler
-- De masquer la valeur dans les environnements via des variables d'environnement ou un vault
-- De supprimer la détection SonarQube S2068
+- Plus aucun mot de passe codé en dur dans le code source ou les fichiers de configuration commités.
+- Le compte admin n'est créé que si `ADMIN_PASSWORD` est définie via variable d'environnement.
+- Les tests utilisent `admin.password=testadmin` dans `src/test/resources/application.properties`.
 
 ---
 
@@ -112,7 +114,7 @@ private static final List<String> ALLOWED_EXTENSIONS = List.of(".jpg", ".jpeg", 
 ```
 
 ### Justification
-Un attaquant pourvait exploiter `subDir` ou `originalFilename` pour écrire en dehors du répertoire d'upload (ex: `../../../etc/passwd`).  
+Un attaquant pouvait exploiter `subDir` ou `originalFilename` pour écrire en dehors du répertoire d'upload.  
 La normalisation + la vérification `startsWith()` empêche toute écriture hors du répertoire de destination. La whitelist d'extensions empêche l'upload de fichiers exécutables.
 
 ---
@@ -159,6 +161,23 @@ Création d'une hiérarchie d'exceptions métiers :
 
 ---
 
+## 7. DOM XSS potentiel — `innerHTML` (`register.html`)
+
+### Localisation (avant correction)
+```javascript
+feedback.innerHTML = '❌ Min 6 caractères';
+```
+
+### Correction appliquée
+```javascript
+feedback.textContent = '❌ Min 6 caractères';
+```
+
+### Justification
+`innerHTML` interprète le contenu comme du HTML, ce qui peut constituer un vecteur XSS si des données utilisateur sont injectées. `textContent` traite le contenu comme du texte brut, éliminant tout risque d'injection de script.
+
+---
+
 ## Vérification finale
 
 | Critère Quality Gate | Avant | Après | Statut |
@@ -166,6 +185,7 @@ Création d'une hiérarchie d'exceptions métiers :
 | Hotspots revus | 0% (E) | 100% | ✅ |
 | Bugs / Vulnérabilités | 0 | 0 | ✅ |
 | Duplications | 0% | 0% | ✅ |
+| Tests | 137 passés | 137 passés | ✅ |
 
-**Conclusion :** Tous les hotspots de sécurité ont été soit corrigés, soit approuvés avec justification documentée. Le critère "Security Hotspots Reviewed" du Quality Gate est satisfait.
+**Conclusion :** Tous les hotspots de sécurité ont été corrigés par modification du code source. Aucune revue manuelle dans l'interface SonarQube n'est nécessaire car les déclencheurs de règles ont été éliminés. Le critère "Security Hotspots Reviewed" du Quality Gate est satisfait.
 

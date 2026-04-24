@@ -15,9 +15,7 @@ public class AdminSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // REVIEW: Mot de passe admin externalisé dans application.properties
-    // pour éviter le hardcoded password (SonarQube S2068)
-    @Value("${admin.password:admin123}")
+    @Value("${admin.password:}")
     private String adminPassword;
 
     public AdminSeeder(UserRepository userRepository,
@@ -28,6 +26,10 @@ public class AdminSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+
+        if (adminPassword == null || adminPassword.isBlank()) {
+            return;
+        }
 
         if (userRepository.findByEmail("admin@admin.com").isPresent()) {
             return;

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -53,6 +54,35 @@ class ClientProductControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("homePatisserie"))
                 .andExpect(model().attributeExists("categories", "featuredProducts", "user", "cartItemCount"));
+    }
+
+    @Test
+    @WithMockUser(username = "unknown@test.com", roles = "CLIENT")
+    void homePatisserie_userNotFound_noCartItemCountSet() throws Exception {
+        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+        when(categoryRepository.findAll()).thenReturn(List.of(new Category()));
+        when(productRepository.findByDeletedFalse()).thenReturn(List.of(new Product()));
+
+        mockMvc.perform(get("/client/homePatisserie"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("homePatisserie"));
+    }
+
+    @Test
+    @WithMockUser(username = "client@test.com", roles = "CLIENT")
+    void homePatisserie_moreThan8Products_returnsSubList() throws Exception {
+        User user = new User();
+        user.setEmail("client@test.com");
+        when(userRepository.findByEmail("client@test.com")).thenReturn(Optional.of(user));
+        when(categoryRepository.findAll()).thenReturn(List.of());
+        when(productRepository.findByDeletedFalse()).thenReturn(
+            java.util.stream.IntStream.range(0, 10).mapToObj(i -> new Product()).toList()
+        );
+        when(cartService.getCartItemCount(user)).thenReturn(0);
+
+        mockMvc.perform(get("/client/homePatisserie"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("featuredProducts"));
     }
 
     @Test
@@ -138,5 +168,36 @@ class ClientProductControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/client/products"));
     }
+
+    @Test
+    @WithMockUser(username = "client@test.com", roles = "CLIENT")
+    void productDetail_notFound_redirects() throws Exception {
+        User user = new User();
+        user.setEmail("client@test.com");
+        when(userRepository.findByEmail("client@test.com")).thenReturn(Optional.of(user));
+        when(productRepository.findById(1L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/client/products/1"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/client/products"));
+    }
+
+    @Test
+    @WithMockUser(username = "client@test.com", roles = "CLIENT")
+    void productDetail_noCategory_returnsView() throws Exception {
+        User user = new User();
+        user.setEmail("client@test.com");
+        Product product = new Product();
+        product.setId(1L);
+        product.setDeleted(false);
+        product.setCategory(null);
+        when(userRepository.findByEmail("client@test.com")).thenReturn(Optional.of(user));
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+
+        mockMvc.perform(get("/client/products/1"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("product-detail"));
+    }
+
 }
 

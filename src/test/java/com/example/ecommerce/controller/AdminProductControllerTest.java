@@ -17,8 +17,8 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @WebMvcTest(AdminProductController.class)
 class AdminProductControllerTest {
@@ -77,11 +77,30 @@ class AdminProductControllerTest {
                         .param("stock", "100")
                         .param("categoryId", "1")
                         .param("description", "Test desc")
-.with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf()))
+                        .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/products"));
 
         verify(productService).createProduct(any(Product.class));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void createProduct_categoryNull_returnsFormWithError() throws Exception {
+        when(categoryRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+        when(categoryRepository.findAll()).thenReturn(List.of());
+
+        mockMvc.perform(multipart("/admin/products")
+                        .file(new MockMultipartFile("imageFile", "", "image/jpeg", new byte[0]))
+                        .param("nom", "New Product")
+                        .param("prix", "10.0")
+                        .param("stock", "100")
+                        .param("categoryId", "1")
+                        .param("description", "Test desc")
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("product-form"))
+                .andExpect(model().attributeExists("error"));
     }
 
     @Test
@@ -113,9 +132,56 @@ class AdminProductControllerTest {
                         .param("stock", "50")
                         .param("categoryId", "1")
                         .param("existingImageUrl", "/old.jpg")
-.with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf()))
+                        .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/products"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateProduct_withNewImage_deletesOldAndSavesNew() throws Exception {
+        when(productService.getProductById(1L)).thenReturn(new Product());
+        when(categoryRepository.findById(1L)).thenReturn(java.util.Optional.of(new Category()));
+        when(fileStorageService.saveImage(any(), eq("products"))).thenReturn("/uploads/products/new.jpg");
+
+        MockMultipartFile image = new MockMultipartFile("imageFile", "new.jpg", "image/jpeg", "test".getBytes());
+
+        mockMvc.perform(multipart("/admin/products/edit/1")
+                        .file(image)
+                        .param("nom", "Updated")
+                        .param("description", "Desc")
+                        .param("prix", "20.0")
+                        .param("stock", "50")
+                        .param("categoryId", "1")
+                        .param("existingImageUrl", "/old.jpg")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/products"));
+
+        verify(fileStorageService).deleteImage("/old.jpg");
+        verify(fileStorageService).saveImage(any(), eq("products"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateProduct_categoryNull_returnsFormWithError() throws Exception {
+        Product product = new Product();
+        product.setId(1L);
+        when(productService.getProductById(1L)).thenReturn(product);
+        when(categoryRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+        when(categoryRepository.findAll()).thenReturn(List.of());
+
+        mockMvc.perform(post("/admin/products/edit/1")
+                        .param("nom", "Updated")
+                        .param("description", "Desc")
+                        .param("prix", "20.0")
+                        .param("stock", "50")
+                        .param("categoryId", "1")
+                        .param("existingImageUrl", "/old.jpg")
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("product-form"))
+                .andExpect(model().attributeExists("error"));
     }
 
     @Test

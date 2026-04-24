@@ -51,7 +51,7 @@
 
                 function updatePasswordFeedback() {
                     const pass = passwordInput.value;
-                    feedback.innerHTML = '';
+                    feedback.textContent = '';
                     feedback.className = 'feedback';
 
                     if (!pass) {
@@ -62,7 +62,7 @@
                     }
 
                     if (pass.length < 6) {
-                        feedback.innerHTML = '❌ Min 6 caractères';
+                        feedback.textContent = '❌ Min 6 caractères';
                         feedback.classList.add('error');
                         submitBtn.disabled = true;
                         return;
@@ -70,7 +70,7 @@
 
                     const hasUpper = /[A-Z]/.test(pass);
                     if (!hasUpper) {
-                        feedback.innerHTML = '❌ Au moins 1 majuscule';
+                        feedback.textContent = '❌ Au moins 1 majuscule';
                         feedback.classList.add('error');
                         submitBtn.disabled = true;
                         return;
@@ -78,13 +78,13 @@
 
                     const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pass);
                     if (!hasSpecial) {
-                        feedback.innerHTML = '❌ Au moins 1 spécial (!@#$%^&*(),.?":{}|<> )';
+                        feedback.textContent = '❌ Au moins 1 spécial (!@#$%^&*(),.?":{}|<> )';
                         feedback.classList.add('error');
                         submitBtn.disabled = true;
                         return;
                     }
 
-                    feedback.innerHTML = '✅ Mot de passe valide';
+                    feedback.textContent = '✅ Mot de passe valide';
                     feedback.classList.add('success');
                     submitBtn.disabled = false;
                 }

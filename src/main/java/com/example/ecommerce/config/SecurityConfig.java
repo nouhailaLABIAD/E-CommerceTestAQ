@@ -40,13 +40,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // REVIEW: CSRF désactivé car l'application utilise des formulaires Thymeleaf
-            // traditionnels (pas d'API REST stateless). Le risque est accepté car :
-            // 1. Toutes les actions sensibles (commande, paiement) nécessitent auth
-            // 2. Aucun endpoint API REST exposé sans token
-            // 3. Marqué comme Approuvé dans SonarQube (S4502)
-            .csrf(csrf -> csrf.disable())
-            
             // Configuration des autorisations
             .authorizeHttpRequests(auth -> auth
                 // Routes publiques

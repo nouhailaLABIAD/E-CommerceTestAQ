@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @WebMvcTest(CategoryController.class)
 class CategoryControllerTest {
@@ -63,12 +64,26 @@ class CategoryControllerTest {
         mockMvc.perform(multipart("/admin/categories")
                         .file(image)
                         .param("nom", "New Cat")
-                .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf()))
+                        .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/categories"));
 
         verify(categoryService).createCategory(any(Category.class));
         verify(fileStorageService).saveImage(any(), eq("categories"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void createCategory_withoutImage_savesCategoryWithoutImage() throws Exception {
+        mockMvc.perform(multipart("/admin/categories")
+                        .file(new MockMultipartFile("imageFile", "", "image/jpeg", new byte[0]))
+                        .param("nom", "New Cat")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/categories"));
+
+        verify(categoryService).createCategory(any(Category.class));
+        verify(fileStorageService, never()).saveImage(any(), any());
     }
 
     @Test
@@ -93,9 +108,29 @@ class CategoryControllerTest {
         mockMvc.perform(post("/admin/categories/edit/1")
                         .param("nom", "Updated")
                         .param("existingImageUrl", "/old.jpg")
-                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf()))
+                        .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/categories"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateCategory_withNewImage_deletesOldAndSavesNew() throws Exception {
+        when(categoryService.getCategoryById(1L)).thenReturn(new Category());
+        when(fileStorageService.saveImage(any(), eq("categories"))).thenReturn("/uploads/categories/new.jpg");
+
+        MockMultipartFile image = new MockMultipartFile("imageFile", "new.jpg", "image/jpeg", "test".getBytes());
+
+        mockMvc.perform(multipart("/admin/categories/edit/1")
+                        .file(image)
+                        .param("nom", "Updated")
+                        .param("existingImageUrl", "/old.jpg")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/categories"));
+
+        verify(fileStorageService).deleteImage("/old.jpg");
+        verify(fileStorageService).saveImage(any(), eq("categories"));
     }
 
     @Test

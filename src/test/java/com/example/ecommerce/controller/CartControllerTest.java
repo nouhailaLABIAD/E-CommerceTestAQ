@@ -19,6 +19,7 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -68,7 +69,6 @@ class CartControllerTest {
     void addToCart_success_redirectsCart() throws Exception {
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
 
-        // FIX: addProduct retourne CartItem (non-void) → utiliser when().thenReturn() au lieu de doNothing()
         CartItem cartItem = new CartItem();
         when(cartService.addProduct(any(User.class), eq(1L), eq(1))).thenReturn(cartItem);
 
@@ -81,6 +81,35 @@ class CartControllerTest {
 
     @Test
     @WithMockUser(username = "test@example.com")
+    void addToCart_exception_addsErrorFlash() throws Exception {
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+        when(cartService.addProduct(any(User.class), eq(1L), eq(1))).thenThrow(new RuntimeException("Stock insuffisant"));
+
+        mockMvc.perform(post("/cart/add/1")
+                        .param("quantity", "1")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/cart"))
+                .andExpect(flash().attribute("error", "Stock insuffisant"));
+    }
+
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void updateQuantity_positive_success() throws Exception {
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+        CartItem cartItem = new CartItem();
+        when(cartService.updateQuantity(any(User.class), eq(1L), eq(3))).thenReturn(cartItem);
+
+        mockMvc.perform(post("/cart/update/1")
+                        .param("quantity", "3")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/cart"))
+                .andExpect(flash().attribute("success", "Quantité mise à jour"));
+    }
+
+    @Test
+    @WithMockUser(username = "test@example.com")
     void updateQuantity_toZero_removes_redirects() throws Exception {
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
         doNothing().when(cartService).removeProduct(any(User.class), eq(1L));
@@ -89,7 +118,22 @@ class CartControllerTest {
                         .param("quantity", "0")
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/cart"));
+                .andExpect(redirectedUrl("/cart"))
+                .andExpect(flash().attribute("success", "Produit supprimé du panier"));
+    }
+
+    @Test
+    @WithMockUser(username = "test@example.com")
+    void updateQuantity_exception_addsErrorFlash() throws Exception {
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+        when(cartService.updateQuantity(any(User.class), eq(1L), eq(3))).thenThrow(new RuntimeException("Erreur"));
+
+        mockMvc.perform(post("/cart/update/1")
+                        .param("quantity", "3")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/cart"))
+                .andExpect(flash().attribute("error", "Erreur"));
     }
 
     @Test
@@ -106,6 +150,19 @@ class CartControllerTest {
 
     @Test
     @WithMockUser(username = "test@example.com")
+    void removeFromCart_exception_addsErrorFlash() throws Exception {
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+        doThrow(new RuntimeException("Erreur suppression")).when(cartService).removeProduct(any(User.class), eq(1L));
+
+        mockMvc.perform(post("/cart/remove/1")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/cart"))
+                .andExpect(flash().attribute("error", "Erreur suppression"));
+    }
+
+    @Test
+    @WithMockUser(username = "test@example.com")
     void clearCart_success_redirects() throws Exception {
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
         doNothing().when(cartService).clearCart(any(User.class));
@@ -117,11 +174,22 @@ class CartControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "test@example.com")
+    void clearCart_exception_addsErrorFlash() throws Exception {
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+        doThrow(new RuntimeException("Erreur vidage")).when(cartService).clearCart(any(User.class));
+
+        mockMvc.perform(post("/cart/clear")
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/cart"))
+                .andExpect(flash().attribute("error", "Erreur vidage"));
+    }
+
+    @Test
     void showCart_notLoggedIn_redirectsLogin() throws Exception {
-        // FIX: Spring Security retourne 401 (UNAUTHORIZED) pour les non-authentifiés,
-        // pas une redirection vers /login dans les tests @WebMvcTest sans config custom.
-        // On vérifie simplement que l'accès est refusé.
         mockMvc.perform(get("/cart"))
                 .andExpect(status().isUnauthorized());
     }
 }
+

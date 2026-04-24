@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,6 +24,29 @@ class ProductServiceImplTest {
 
     @InjectMocks
     private ProductServiceImpl productService;
+
+    @Test
+    void getAllAvailableProducts_returnsList() {
+        Product p1 = new Product();
+        Product p2 = new Product();
+        when(productRepository.findByDeletedFalse()).thenReturn(List.of(p1, p2));
+
+        List<Product> result = productService.getAllAvailableProducts();
+
+        assertEquals(2, result.size());
+        verify(productRepository).findByDeletedFalse();
+    }
+
+    @Test
+    void searchProducts_returnsList() {
+        Product p1 = new Product();
+        when(productRepository.findByNomContainingIgnoreCaseAndDeletedFalse("cake")).thenReturn(List.of(p1));
+
+        List<Product> result = productService.searchProducts("cake");
+
+        assertEquals(1, result.size());
+        verify(productRepository).findByNomContainingIgnoreCaseAndDeletedFalse("cake");
+    }
 
     @Test
     void getProductById_success() {
@@ -114,6 +138,64 @@ class ProductServiceImplTest {
         Product result = productService.updateProduct(1L, update);
 
         assertEquals("/keep.jpg", result.getImageUrl());
+    }
+
+    @Test
+    void updateProduct_withCategoryAndImage_updatesBoth() {
+        Category newCategory = new Category();
+        newCategory.setId(2L);
+
+        Product existing = new Product();
+        existing.setId(1L);
+        existing.setCategory(new Category());
+        existing.setImageUrl("/old.jpg");
+
+        Product update = new Product();
+        update.setNom("Updated");
+        update.setPrix(30.0);
+        update.setStock(10);
+        update.setDescription("New desc");
+        update.setCategory(newCategory);
+        update.setImageUrl("/new.jpg");
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(productRepository.save(existing)).thenReturn(existing);
+
+        Product result = productService.updateProduct(1L, update);
+
+        assertEquals("Updated", result.getNom());
+        assertEquals(newCategory, result.getCategory());
+        assertEquals("/new.jpg", result.getImageUrl());
+    }
+
+    @Test
+    void softDeleteProduct_setsDeletedTrue() {
+        Product existing = new Product();
+        existing.setId(1L);
+        existing.setDeleted(false);
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(productRepository.save(existing)).thenReturn(existing);
+
+        productService.softDeleteProduct(1L);
+
+        assertTrue(existing.isDeleted());
+        verify(productRepository).save(existing);
+    }
+
+    @Test
+    void updateStock_setsNewStock() {
+        Product existing = new Product();
+        existing.setId(1L);
+        existing.setStock(5);
+
+        when(productRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(productRepository.save(existing)).thenReturn(existing);
+
+        productService.updateStock(1L, 20);
+
+        assertEquals(20, existing.getStock());
+        verify(productRepository).save(existing);
     }
 }
 
