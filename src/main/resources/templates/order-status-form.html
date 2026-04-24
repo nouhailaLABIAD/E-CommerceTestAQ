@@ -13,7 +13,11 @@
     <a class="brand" href="/admin">Lalla <em>Délices</em></a>
     <a href="/admin/homeAdmin">🏠 Dashboard</a>
     <a href="/admin/orders" class="active">📋 Commandes</a>
-    <div class="logout"><a href="/logout">🚪 Déconnexion</a></div>
+    <div class="logout">
+        <form th:action="@{/logout}" method="post" style="display:inline; margin:0;">
+            <button type="submit" style="background:none; border:none; color:inherit; font:inherit; cursor:pointer; padding:0;">🚪 Déconnexion</button>
+        </form>
+    </div>
 </aside>
 
 <main class="admin-main">
