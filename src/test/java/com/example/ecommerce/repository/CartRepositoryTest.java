@@ -26,7 +26,7 @@ class CartRepositoryTest {
     void findByUser_existing_returnsCart() {
         User user = new User();
         user.setEmail("cart@example.com");
-        user.setPassword("pass");
+        user.setPassword("Password123!");
         user.setNom("Cart User");
         user.setRole(Role.CLIENT);
         User savedUser = userRepository.save(user);
@@ -55,7 +55,7 @@ class CartRepositoryTest {
     void save_createsCart() {
         User user = new User();
         user.setEmail("newcart@example.com");
-        user.setPassword("pass");
+        user.setPassword("Password123!");
         user.setNom("New Cart User");
         user.setRole(Role.CLIENT);
         User savedUser = userRepository.save(user);

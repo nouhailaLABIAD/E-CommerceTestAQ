@@ -28,7 +28,7 @@ class OrderRepositoryTest {
     void findByUser_returnsOrders() {
         User user = new User();
         user.setEmail("order@example.com");
-        user.setPassword("pass");
+        user.setPassword("Password123!");
         user.setNom("Order User");
         user.setRole(Role.CLIENT);
         User savedUser = userRepository.save(user);
@@ -60,7 +60,7 @@ class OrderRepositoryTest {
     void findByUserEmailContainingIgnoreCase_returnsMatching() {
         User user = new User();
         user.setEmail("search@example.com");
-        user.setPassword("pass");
+        user.setPassword("Password123!");
         user.setNom("Search User");
         user.setRole(Role.CLIENT);
         User savedUser = userRepository.save(user);

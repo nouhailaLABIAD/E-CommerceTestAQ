@@ -30,11 +30,21 @@ class AdminOrderControllerTest {
     @MockBean
     private OrderService orderService;
 
+    private Order createOrderWithUser(Long id) {
+        Order order = new Order();
+        order.setId(id);
+        order.setStatus(OrderStatus.EN_COURS);
+        order.setItems(new java.util.HashSet<>());
+        User user = new User();
+        user.setEmail("client@example.com");
+        order.setUser(user);
+        return order;
+    }
+
     @Test
     @WithMockUser(roles = "ADMIN")
     void listOrders_returnsView() throws Exception {
-        Order order = new Order();
-        order.setId(1L);
+        Order order = createOrderWithUser(1L);
         when(orderService.getAllOrders()).thenReturn(List.of(order));
 
         mockMvc.perform(get("/admin/orders"))
@@ -47,8 +57,7 @@ class AdminOrderControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void searchOrders_returnsView() throws Exception {
-        Order order = new Order();
-        order.setId(1L);
+        Order order = createOrderWithUser(1L);
         when(orderService.searchOrdersByUserEmail("test")).thenReturn(List.of(order));
 
         mockMvc.perform(post("/admin/orders/search")
@@ -62,8 +71,7 @@ class AdminOrderControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void viewOrder_returnsDetailView() throws Exception {
-        Order order = new Order();
-        order.setId(1L);
+        Order order = createOrderWithUser(1L);
         when(orderService.getAdminOrderById(1L)).thenReturn(order);
 
         mockMvc.perform(get("/admin/orders/1"))
@@ -75,8 +83,7 @@ class AdminOrderControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void showStatusForm_returnsForm() throws Exception {
-        Order order = new Order();
-        order.setId(1L);
+        Order order = createOrderWithUser(1L);
         when(orderService.getAdminOrderById(1L)).thenReturn(order);
 
         mockMvc.perform(get("/admin/orders/status/1"))
@@ -88,7 +95,7 @@ class AdminOrderControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void updateOrderStatus_redirects() throws Exception {
-        doNothing().when(orderService).updateStatus(eq(1L), any(OrderStatus.class));
+        when(orderService.updateStatus(eq(1L), any(OrderStatus.class))).thenReturn(createOrderWithUser(1L));
 
         mockMvc.perform(post("/admin/orders/status/1")
                         .param("status", "VALIDEE")

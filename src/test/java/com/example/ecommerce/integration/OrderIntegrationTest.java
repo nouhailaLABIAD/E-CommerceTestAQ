@@ -26,10 +26,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @Sql(
     scripts = {
+        "classpath:test-data/categories.sql",
         "classpath:test-data/users.sql",
         "classpath:test-data/products.sql"
     },
-    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD // ✅ مهم
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
 )
 class OrderIntegrationTest {
 

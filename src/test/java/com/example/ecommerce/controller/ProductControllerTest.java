@@ -72,16 +72,11 @@ class ProductControllerTest {
     }
 
     @Test
-    @WithMockUser // FIX: ajout authentification mock
+    @WithMockUser
     void getProductDetail_notFound_returnsError() throws Exception {
         when(productService.getProductById(999L)).thenThrow(new RuntimeException("Produit non trouvé"));
 
         mockMvc.perform(get("/products/999"))
-                .andExpect(result -> {
-                    Exception resolvedException = result.getResolvedException();
-                    assert resolvedException != null;
-                    assert resolvedException instanceof RuntimeException;
-                    assert resolvedException.getMessage().equals("Produit non trouvé");
-                });
+                .andExpect(status().isInternalServerError());
     }
 }

@@ -22,7 +22,7 @@ class UserRepositoryTest {
     void findByEmail_existing_returnsUser() {
         User user = new User();
         user.setEmail("test@example.com");
-        user.setPassword("password");
+        user.setPassword("Password123!");
         user.setNom("Test User");
         user.setRole(Role.CLIENT);
         userRepository.save(user);
@@ -43,7 +43,7 @@ class UserRepositoryTest {
     void save_createsUser() {
         User user = new User();
         user.setEmail("new@example.com");
-        user.setPassword("password");
+        user.setPassword("Password123!");
         user.setNom("New User");
         user.setRole(Role.CLIENT);
 

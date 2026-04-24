@@ -22,15 +22,30 @@ class ProductRepositoryTest {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    private Category createTestCategory() {
+        Category category = new Category();
+        category.setNom("Test Category");
+        return categoryRepository.save(category);
+    }
+
+    private Product createValidProduct(String nom) {
+        Product product = new Product();
+        product.setNom(nom);
+        product.setDescription("Test description for " + nom);
+        product.setPrix(10.0);
+        product.setStock(5);
+        product.setDeleted(false);
+        product.setCategory(createTestCategory());
+        return product;
+    }
+
     @Test
     void findByDeletedFalse_returnsOnlyNonDeleted() {
-        Product p1 = new Product();
-        p1.setNom("Active");
+        Product p1 = createValidProduct("Active");
         p1.setDeleted(false);
         productRepository.save(p1);
 
-        Product p2 = new Product();
-        p2.setNom("Deleted");
+        Product p2 = createValidProduct("Deleted");
         p2.setDeleted(true);
         productRepository.save(p2);
 
@@ -42,8 +57,7 @@ class ProductRepositoryTest {
 
     @Test
     void findByNomContainingIgnoreCaseAndDeletedFalse_returnsMatching() {
-        Product p = new Product();
-        p.setNom("Chocolate Cake");
+        Product p = createValidProduct("Chocolate Cake");
         p.setDeleted(false);
         productRepository.save(p);
 
@@ -55,11 +69,7 @@ class ProductRepositoryTest {
 
     @Test
     void save_createsProduct() {
-        Product product = new Product();
-        product.setNom("New Product");
-        product.setPrix(10.0);
-        product.setStock(5);
-        product.setDeleted(false);
+        Product product = createValidProduct("New Product");
 
         Product saved = productRepository.save(product);
 
@@ -69,9 +79,7 @@ class ProductRepositoryTest {
 
     @Test
     void findById_existing_returnsProduct() {
-        Product product = new Product();
-        product.setNom("Find Me");
-        product.setDeleted(false);
+        Product product = createValidProduct("Find Me");
         Product saved = productRepository.save(product);
 
         Optional<Product> found = productRepository.findById(saved.getId());
@@ -82,9 +90,7 @@ class ProductRepositoryTest {
 
     @Test
     void deleteById_removesProduct() {
-        Product product = new Product();
-        product.setNom("To Delete");
-        product.setDeleted(false);
+        Product product = createValidProduct("To Delete");
         Product saved = productRepository.save(product);
 
         productRepository.deleteById(saved.getId());

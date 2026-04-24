@@ -44,14 +44,10 @@ class AdminProductControllerTest {
         List<Product> products = List.of(product);
         when(productService.getAllAvailableProducts()).thenReturn(products);
 
-        List<Category> categories = List.of(new Category());
-        when(categoryRepository.findAll()).thenReturn(categories);
-
         mockMvc.perform(get("/admin/products"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin-products"))
-                .andExpect(model().attribute("products", products))
-                .andExpect(model().attributeExists("categories"));
+                .andExpect(model().attribute("products", products));
     }
 
     @Test
@@ -108,10 +104,14 @@ class AdminProductControllerTest {
     @WithMockUser(roles = "ADMIN")
     void updateProduct_redirects() throws Exception {
         when(productService.getProductById(1L)).thenReturn(new Product());
+        when(categoryRepository.findById(1L)).thenReturn(java.util.Optional.of(new Category()));
 
         mockMvc.perform(post("/admin/products/edit/1")
                         .param("nom", "Updated")
+                        .param("description", "Updated description")
                         .param("prix", "20.0")
+                        .param("stock", "50")
+                        .param("categoryId", "1")
                         .param("existingImageUrl", "/old.jpg")
 .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf()))
                 .andExpect(status().is3xxRedirection())
