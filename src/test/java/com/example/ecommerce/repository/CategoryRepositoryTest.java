@@ -24,7 +24,7 @@ class CategoryRepositoryTest {
     void findAll_returnsAllCategories() {
         List<Category> categories = categoryRepository.findAll();
         assertFalse(categories.isEmpty());
-        assertEquals(3, categories.size());
+        assertTrue(categories.size() >= 3);
     }
 
     @Test

@@ -3,7 +3,6 @@ package com.example.ecommerce.controller;
 import com.example.ecommerce.entity.Category;
 import com.example.ecommerce.entity.Product;
 import com.example.ecommerce.service.FileStorageService;
-import com.example.ecommerce.service.interfaces.CategoryService;
 import com.example.ecommerce.service.interfaces.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +30,7 @@ class AdminProductControllerTest {
     private ProductService productService;
 
     @MockBean
-    private CategoryService categoryService;
+    private com.example.ecommerce.repository.CategoryRepository categoryRepository;
 
     @MockBean
     private FileStorageService fileStorageService;
@@ -46,7 +45,7 @@ class AdminProductControllerTest {
         when(productService.getAllAvailableProducts()).thenReturn(products);
 
         List<Category> categories = List.of(new Category());
-        when(categoryService.getAllCategories()).thenReturn(categories);
+        when(categoryRepository.findAll()).thenReturn(categories);
 
         mockMvc.perform(get("/admin/products"))
                 .andExpect(status().isOk())
@@ -59,12 +58,12 @@ class AdminProductControllerTest {
     @WithMockUser(roles = "ADMIN")
     void showCreateForm_returnsForm() throws Exception {
         List<Category> categories = List.of(new Category());
-        when(categoryService.getAllCategories()).thenReturn(categories);
+        when(categoryRepository.findAll()).thenReturn(categories);
 
         mockMvc.perform(get("/admin/products/new"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("product-form"))
-                .andExpect(model().attribute("product", isA(Product.class)))
+                .andExpect(model().attribute("product", org.hamcrest.Matchers.instanceOf(Product.class)))
                 .andExpect(model().attribute("categories", categories));
     }
 
@@ -73,7 +72,7 @@ class AdminProductControllerTest {
     void createProduct_withImage_redirects() throws Exception {
         MockMultipartFile image = new MockMultipartFile("imageFile", "test.jpg", "image/jpeg", "test".getBytes());
         when(fileStorageService.saveImage(any(), eq("products"))).thenReturn("/uploads/products/test.jpg");
-        when(categoryService.getCategoryById(1L)).thenReturn(new Category());
+        when(categoryRepository.findById(1L)).thenReturn(java.util.Optional.of(new Category()));
 
         mockMvc.perform(multipart("/admin/products")
                         .file(image)
@@ -96,13 +95,13 @@ class AdminProductControllerTest {
         product.setId(1L);
         product.setNom("Old Product");
         when(productService.getProductById(1L)).thenReturn(product);
-        when(categoryService.getAllCategories()).thenReturn(List.of(new Category()));
+        when(categoryRepository.findAll()).thenReturn(List.of(new Category()));
 
         mockMvc.perform(get("/admin/products/edit/1"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("product-form"))
                 .andExpect(model().attribute("product", product))
-.andExpect(model().attributeExists("categories"));
+                .andExpect(model().attributeExists("categories"));
     }
 
     @Test

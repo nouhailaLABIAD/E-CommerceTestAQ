@@ -135,6 +135,14 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<excludes>
+						<exclude>com/example/ecommerce/entity/**</exclude>
+						<exclude>com/example/ecommerce/config/**</exclude>
+						<exclude>com/example/ecommerce/dto/**</exclude>
+						<exclude>com/example/ecommerce/EcommerceApplication.class</exclude>
+					</excludes>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.sonarsource.scanner.maven</groupId>

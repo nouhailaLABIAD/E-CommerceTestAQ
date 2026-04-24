@@ -77,6 +77,11 @@ class ProductControllerTest {
         when(productService.getProductById(999L)).thenThrow(new RuntimeException("Produit non trouvé"));
 
         mockMvc.perform(get("/products/999"))
-                .andExpect(status().isOk());
+                .andExpect(result -> {
+                    Exception resolvedException = result.getResolvedException();
+                    assert resolvedException != null;
+                    assert resolvedException instanceof RuntimeException;
+                    assert resolvedException.getMessage().equals("Produit non trouvé");
+                });
     }
 }
