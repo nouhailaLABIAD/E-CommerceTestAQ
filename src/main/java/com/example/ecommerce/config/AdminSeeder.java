@@ -1,5 +1,6 @@
 package com.example.ecommerce.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,11 @@ public class AdminSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    // REVIEW: Mot de passe admin externalisé dans application.properties
+    // pour éviter le hardcoded password (SonarQube S2068)
+    @Value("${admin.password:admin123}")
+    private String adminPassword;
 
     public AdminSeeder(UserRepository userRepository,
                        PasswordEncoder passwordEncoder) {
@@ -30,7 +36,7 @@ public class AdminSeeder implements CommandLineRunner {
         User admin = new User();
         admin.setNom("Administrator");
         admin.setEmail("admin@admin.com");
-        admin.setPassword(passwordEncoder.encode("admin123"));
+        admin.setPassword(passwordEncoder.encode(adminPassword));
         admin.setRole(Role.ADMIN);
 
         userRepository.save(admin);

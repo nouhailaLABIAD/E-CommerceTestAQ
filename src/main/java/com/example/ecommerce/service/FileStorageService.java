@@ -1,5 +1,8 @@
 package com.example.ecommerce.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -8,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -18,8 +22,13 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
-    // Répertoire racine des uploads (dans static pour être servi par Spring Boot)
-    private static final String UPLOAD_DIR = "src/main/resources/static/uploads/";
+    private static final Logger logger = LoggerFactory.getLogger(FileStorageService.class);
+
+    // REVIEW: Extensions d'image autorisées (whitelist) pour sécurité
+    private static final List<String> ALLOWED_EXTENSIONS = List.of(".jpg", ".jpeg", ".png", ".webp", ".gif");
+
+    @Value("${upload.dir:src/main/resources/static/uploads/}")
+    private String uploadDir;
 
     /**
      * Sauvegarde un fichier image et retourne son URL publique.
@@ -43,18 +52,28 @@ public class FileStorageService {
         String originalFilename = file.getOriginalFilename();
         String extension = "";
         if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
+        }
+
+        // REVIEW: Validation stricte de l'extension (whitelist)
+        if (!ALLOWED_EXTENSIONS.contains(extension)) {
+            throw new IllegalArgumentException("Extension d'image non autorisée : " + extension);
         }
 
         // Générer un nom unique pour éviter les collisions
         String newFilename = UUID.randomUUID().toString() + extension;
 
         // Créer le répertoire s'il n'existe pas
-        Path uploadPath = Paths.get(UPLOAD_DIR + subDir);
+        Path uploadPath = Paths.get(uploadDir + subDir).normalize();
         Files.createDirectories(uploadPath);
 
+        // REVIEW: Vérification anti-traversal — le fichier résolu doit être sous uploadPath
+        Path filePath = uploadPath.resolve(newFilename).normalize();
+        if (!filePath.startsWith(uploadPath)) {
+            throw new IllegalArgumentException("Chemin de fichier invalide détecté (path traversal)");
+        }
+
         // Copier le fichier
-        Path filePath = uploadPath.resolve(newFilename);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
         // Retourner l'URL publique
@@ -70,12 +89,19 @@ public class FileStorageService {
         if (imageUrl == null || imageUrl.isEmpty()) return;
         try {
             // Convertir l'URL en chemin fichier
-            String filePath = "src/main/resources/static" + imageUrl;
-            Path path = Paths.get(filePath);
+            String filePath = uploadDir.replaceAll("/$", "") + imageUrl;
+            Path path = Paths.get(filePath).normalize();
+            Path basePath = Paths.get(uploadDir).normalize();
+
+            // REVIEW: Vérification anti-traversal lors de la suppression
+            if (!path.startsWith(basePath)) {
+                logger.warn("Tentative de suppression en dehors du répertoire autorisé : {}", imageUrl);
+                return;
+            }
+
             Files.deleteIfExists(path);
         } catch (IOException e) {
-            // Log silencieux — ne pas bloquer l'opération principale
-            System.err.println("Impossible de supprimer l'image : " + imageUrl);
+            logger.warn("Impossible de supprimer l'image : {}", imageUrl, e);
         }
     }
 }

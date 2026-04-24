@@ -1,12 +1,15 @@
 package com.example.ecommerce.service.impl;
 
 import com.example.ecommerce.entity.*;
+import com.example.ecommerce.exception.BusinessException;
+import com.example.ecommerce.exception.EmptyCartException;
+import com.example.ecommerce.exception.InsufficientStockException;
+import com.example.ecommerce.exception.OrderNotFoundException;
 import com.example.ecommerce.repository.OrderRepository;
 import com.example.ecommerce.repository.OrderItemRepository;
 import com.example.ecommerce.repository.ProductRepository;
 import com.example.ecommerce.service.CartService;
 import com.example.ecommerce.service.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,17 +21,20 @@ import java.util.List;
 @Transactional
 public class OrderServiceImpl implements OrderService {
 
-    @Autowired
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final CartService cartService;
+    private final ProductRepository productRepository;
 
-    @Autowired
-    private OrderItemRepository orderItemRepository;
-
-    @Autowired
-    private CartService cartService;
-
-    @Autowired
-    private ProductRepository productRepository;
+    public OrderServiceImpl(OrderRepository orderRepository,
+                            OrderItemRepository orderItemRepository,
+                            CartService cartService,
+                            ProductRepository productRepository) {
+        this.orderRepository = orderRepository;
+        this.orderItemRepository = orderItemRepository;
+        this.cartService = cartService;
+        this.productRepository = productRepository;
+    }
 
     @Override
     public Order createOrder(User user) {
@@ -36,15 +42,14 @@ public class OrderServiceImpl implements OrderService {
         Cart cart = cartService.getCartByUser(user);
 
         if (cart.getItems() == null || cart.getItems().isEmpty()) {
-            throw new RuntimeException("Le panier est vide");
+            throw new EmptyCartException();
         }
 
         // 2. Vérifier le stock pour chaque produit
         for (CartItem cartItem : cart.getItems()) {
             Product product = cartItem.getProduct();
             if (product.getStock() < cartItem.getQuantity()) {
-                throw new RuntimeException("Stock insuffisant pour : " + product.getNom()
-                        + " (disponible : " + product.getStock() + ")");
+                throw new InsufficientStockException(product.getNom(), product.getStock());
             }
         }
 
@@ -88,7 +93,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Commande introuvable : " + orderId));
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
     }
 
     @Override
@@ -103,14 +108,25 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.save(order);
     }
 
-@Override
+    @Override
     public Order cancelOrder(Long orderId) {
         Order order = getOrderById(orderId);
 
         if (order.getStatus() != OrderStatus.EN_COURS) {
-            throw new RuntimeException("Impossible d'annuler une commande déjà traitée");
+            throw new BusinessException("Impossible d'annuler une commande déjà traitée");
         }
 
+        return performSoftCancel(order);
+    }
+
+    /**
+     * Effectue l'annulation logique d'une commande et restaure le stock.
+     * Méthode factorisée utilisée par cancelOrder et deleteOrder.
+     *
+     * @param order La commande à annuler
+     * @return La commande annulée
+     */
+    private Order performSoftCancel(Order order) {
         // Restaurer le stock
         for (OrderItem item : order.getItems()) {
             Product product = item.getProduct();
@@ -132,7 +148,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order getAdminOrderById(Long orderId) {
         return orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Commande introuvable : " + orderId));
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
     }
 
     @Override
@@ -146,18 +162,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void deleteOrder(Long orderId) {
         Order order = getAdminOrderById(orderId);
-        // Soft delete: same as cancelOrder logic
         if (order.getStatus() == OrderStatus.ANNULEE) {
             return; // already deleted
         }
-        // Restore stock (if applicable)
-        for (OrderItem item : order.getItems()) {
-            Product product = item.getProduct();
-            product.setStock(product.getStock() + item.getQuantity());
-            productRepository.save(product);
-        }
-        order.setStatus(OrderStatus.ANNULEE);
-        orderRepository.save(order);
+        performSoftCancel(order);
     }
 
     @Override

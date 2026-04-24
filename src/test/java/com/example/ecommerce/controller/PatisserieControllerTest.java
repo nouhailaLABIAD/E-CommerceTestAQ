@@ -14,9 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Optional;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PatisserieController.class)
@@ -53,10 +51,9 @@ class PatisserieControllerTest {
     @Test
     @WithMockUser(roles = "CLIENT")
     void addToCart_redirects() throws Exception {
-        mockMvc.perform(post("/patisserie/add")
+        mockMvc.perform(get("/patisserie/add")
                         .param("productId", "1")
-                        .param("quantity", "2")
-                        .with(csrf()))
+                        .param("quantity", "2"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/patisserie?added=1"));
     }

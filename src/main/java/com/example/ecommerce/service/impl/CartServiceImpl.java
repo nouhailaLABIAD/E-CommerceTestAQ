@@ -4,6 +4,10 @@ import com.example.ecommerce.entity.Cart;
 import com.example.ecommerce.entity.CartItem;
 import com.example.ecommerce.entity.Product;
 import com.example.ecommerce.entity.User;
+import com.example.ecommerce.exception.BusinessException;
+import com.example.ecommerce.exception.InsufficientStockException;
+import com.example.ecommerce.exception.ProductNotFoundException;
+import com.example.ecommerce.exception.ProductUnavailableException;
 import com.example.ecommerce.repository.CartItemRepository;
 import com.example.ecommerce.repository.CartRepository;
 import com.example.ecommerce.repository.ProductRepository;
@@ -76,16 +80,16 @@ public class CartServiceImpl implements CartService {
 
         // Récupérer le produit depuis la base de données
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Produit non trouvé avec l'ID: " + productId));
+                .orElseThrow(() -> new ProductNotFoundException(productId));
         
         // Vérifier si le produit n'est pas supprimé
         if (product.isDeleted()) {
-            throw new RuntimeException("Ce produit n'est plus disponible");
+            throw new ProductUnavailableException();
         }
         
         // Vérifier le stock
         if (product.getStock() < quantity) {
-            throw new RuntimeException("Stock insuffisant. Disponible: " + product.getStock());
+            throw new InsufficientStockException(product.getStock());
         }
 
         Cart cart = getCartByUser(user);
@@ -99,7 +103,7 @@ public class CartServiceImpl implements CartService {
             
             // Vérifier le stock pour la nouvelle quantité
             if (product.getStock() < newQuantity) {
-                throw new RuntimeException("Stock insuffisant pour cette quantité");
+                throw new InsufficientStockException(product.getStock());
             }
             
             item.setQuantity(newQuantity);
@@ -126,7 +130,7 @@ public class CartServiceImpl implements CartService {
         Cart cart = getCartByUser(user);
         
         CartItem item = cartItemRepository.findByCartIdAndProductId(cart.getId(), productId)
-                .orElseThrow(() -> new RuntimeException("Produit non trouvé dans le panier"));
+                .orElseThrow(() -> new BusinessException("Produit non trouvé dans le panier"));
         
         if (quantity <= 0) {
             cartItemRepository.delete(item);
@@ -137,7 +141,7 @@ public class CartServiceImpl implements CartService {
         // Vérifier le stock
         Product product = item.getProduct();
         if (product.getStock() < quantity) {
-            throw new RuntimeException("Stock insuffisant. Disponible: " + product.getStock());
+            throw new InsufficientStockException(product.getStock());
         }
         
         item.setQuantity(quantity);

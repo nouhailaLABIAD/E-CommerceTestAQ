@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.ecommerce.entity.Product;
+import com.example.ecommerce.exception.ProductNotFoundException;
 import com.example.ecommerce.repository.ProductRepository;
 import com.example.ecommerce.service.interfaces.ProductService;
 
@@ -30,7 +31,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product getProductById(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     @Override
